@@ -25,7 +25,7 @@ def read_json(params):
 
 
             # dfd.prepare_df() return flows for dag
-            flows += dfd.prepare_df(mapping_dict, meta_class, params['tech_fields'], params['loadType'], params['colsToHash'], params['topic'], params['etl_schema'])
+            flows += dfd.prepare_df(mapping_dict, meta_class, params['tech_fields'], params['loadType'], params['colsToHash'], params['topic'], params['etl_schema'], params['file_dir'], os.path.basename(json_file) if params['old_mapping_flag'].lower() == 'yes' else None)
 
             # save excel mapping
             xlsx_name = os.path.join(os.path.dirname(json_file), f'S2T_mapping_{params["file_name"]}_' + os.path.basename(json_file).replace('json', 'xlsx'))

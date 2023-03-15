@@ -1,6 +1,7 @@
 def prepare_df(mapping_dict, meta_class,
-               tech_fields, loadType, colsToHash, topic, etl_schema):
+               tech_fields, loadType, colsToHash, topic, etl_schema, file_dir, json_file=None):
     import pandas as pd
+    import os
 
     df_dag = pd.DataFrame({'table_name': mapping_dict['table_name'],
                            'code_attr': mapping_dict['code_attr'],
@@ -16,14 +17,30 @@ def prepare_df(mapping_dict, meta_class,
     df_dag.loc[df_dag['alias'].str.endswith(('_hash', '_array')), 'colType'] = 'hash'
     df_dag.loc[df_dag['colType'] != 'hash', 'colType'] = 'string'
 
-    for ind in df_dag[['alias', 'tab_lvl']].index:
+    old_map =''
+    df = pd.DataFrame()
+    if json_file != None:
+        for filename in os.listdir(file_dir):
+             if filename.endswith('xlsx') & (filename.split('_')[-1] == json_file.replace('json', 'xlsx')):
+                 old_map = os.path.join(file_dir, filename)
+        df = pd.read_excel(old_map, sheet_name='Mapping', header=1)
+        df = df[['Таблица.1','Код атрибута.1']]
+
+
+    for ind in df_dag.index:
         alias = df_dag.loc[ind, 'alias']
         tab_lvl = df_dag.loc[ind, 'tab_lvl']
+        code_attr = df_dag.loc[ind, 'code_attr']
         if tab_lvl != 0:
-            if (len(alias.split('_')) > 2) & \
+            if (len(alias.split('_')) >= 2) & \
                     (alias not in tech_fields) & \
                     ('_hash' not in alias):
                 df_dag.loc[ind, 'alias'] = '_'.join(alias.split('_')[1:])
+            if 'hash' in code_attr:
+                df_dag.loc[ind, 'code_attr'] = df_dag.loc[ind, 'explodedColumns'].split(',')[-1].split('.')[-1] + '.' + code_attr.replace('_hash', '')
+        # print(df_dag.loc[ind, 'explodedColumns'])
+
+
 
     df_dag.loc[
         (df_dag['tab_lvl'] == 0) &

@@ -8,6 +8,7 @@ def read_config():
 
         params = {
             'file_dir': raw['file_dir'],
+            'old_mapping_flag':raw['old_mapping_flag'],
             'file_name': raw['file_name'],
             'base_system_source': raw['base_system_source'],
             'base_system_target':raw['base_system_target'],

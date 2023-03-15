@@ -17,12 +17,22 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
     new_table = start_table + "_" + key
     new_describe_table = [definitions.get(next_node)[f'{description}']] if f'{description}' in definitions.get(
         next_node) else describe_table
+
+    explodedPath = []
+    print(new_path)
+    for i in range(0, len(new_path) - 1):
+        if new_path[i] == explodedColumns[-1].split('.')[-1]:
+            explodedPath = new_path[i:]
+
     if len(explodedColumns) == 1:
-        explodedColumns.append('payload.' + '.'.join(new_path))
+        explodedColumns.append('.'.join(new_path)) #'payload.' +
     else:
-        explodedColumns.append('.'.join(new_path))
-    listing_definition(mapping_dict, definitions, description, next_node, payload_node, new_path, tab_lvl, new_table, new_describe_attr,
-                       new_describe_table, explodedColumns)
+        explodedColumns.append('.'.join(explodedPath))
+    # print(explodedPath)
+    # print(new_path)
+    # listing_definition(mapping_dict, definitions, description, next_node, payload_node, new_path, tab_lvl, new_table, new_describe_attr, new_describe_table, explodedColumns)
+    listing_definition(mapping_dict, definitions, description, next_node, payload_node, explodedPath, tab_lvl, new_table,
+                        new_describe_attr, new_describe_table, explodedColumns)
     explodedColumns.pop()
     tab_lvl -= 1
 
@@ -47,19 +57,21 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
 
         # Add hash fileds
         if tab_lvl != 0:
-            hash_field = path[-1].split('_')[-1] + '_hash'
+            # hash_field = path[-1].split('_')[-1] + '_hash'
+            hash_field = explodedColumns[-1]
+            # print(path)
             array_field = path[-1].split('_')[-1] + '_array'
-            #parent_table = start_table.replace('_'+start_table.split('_')[-1], '')
             parent_table = '_'.join(start_table.split('_')[:-1])
+
             # Add in daughter
             append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, array_field,
                            describe_attr[-1] + f' (связь с {parent_table})' if len(describe_attr) > 0 else f' (связь с {parent_table})',
-                           describe_table, 'string', ', '.join(explodedColumns))
+                           describe_table, 'hash', ', '.join(explodedColumns))
 
             # Add in parent
             append_to_dict(mapping_dict, payload_node, tab_lvl-1, parent_table, hash_field,
                            describe_attr[-1] + f' (связь с {start_table})' if len(describe_attr) > 0 else f' (связь с {start_table})',
-                           describe_table, 'string', ', '.join(explodedColumns[:-1]))
+                           describe_table, 'hash', ', '.join(explodedColumns[:-1]))
 
 
     if not properties:
@@ -70,9 +82,8 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
 
     for key, value in properties.items():
         if isinstance(value, dict):
-            # isRefs = check_ref(value, path, key, describe_attr, description)
-            # return [next_node, new_path, new_describe_attr]
             if "$ref" in value:
+                print(path)
                 isRefs = check_ref(value, path, key, describe_attr, description)
                 listing_definition(mapping_dict, definitions, description, isRefs[0], payload_node, isRefs[1], tab_lvl, start_table, isRefs[2], describe_table, explodedColumns)
             elif "anyOf" in value:
@@ -93,6 +104,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
                 else:
                     if "$ref" in value["items"]:
                         isRefs = check_ref(value['items'], path, key, describe_attr, description)
+                        # print(explodedColumns)
                         repeat_action(mapping_dict, tab_lvl, isRefs[0], payload_node, path, key, value, describe_attr, description, definitions, start_table, describe_table, explodedColumns)
                     else:
                         append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, '_'.join(path + [key]),
@@ -138,10 +150,11 @@ def parsing_json(definitions, nodes, database):
     for node in nodes:
         tab_lvl = 0
         start_explodedColumns = ['payload']
+        start_path = ['payload']
         start_table = f"{database}_" + node
         describe_table = definitions[node]['alias'] if 'alias' in definitions[node] else []
         description = 'alias' if 'alias' in definitions[node] else 'title'
-        listing_definition(mapping_dict, definitions, description, node, node, [], tab_lvl, start_table, [], [describe_table], start_explodedColumns)
+        listing_definition(mapping_dict, definitions, description, node, node, start_path, tab_lvl, start_table, [], [describe_table], start_explodedColumns)
 
     # print({key:len(values) for key, values in mapping_dict.items()})
     return mapping_dict

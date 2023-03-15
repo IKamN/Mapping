@@ -13,7 +13,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
         code_attr = df.loc[ind, 'code_attr']
         tab_lvl = df.loc[ind, 'tab_lvl']
         if tab_lvl != 0:
-            if (len(code_attr.split('_')) > 2) & \
+            if (len(code_attr.split('_')) >= 2) & \
                     (code_attr not in tech_fields) & \
                     ('_hash' not in code_attr.lower()):
                 df.loc[ind, 'code_attr'] = '_'.join(code_attr.split('_')[1:])
