@@ -1,9 +1,9 @@
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
-def append_to_dict(mapping_dict, node_name, tab_lvl, table_name, tech, describe_attr, describe_table, colType, explodedColumns):
+def append_to_dict(mapping_dict, node_name, tab_lvl, table_name, code_attr, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
     mapping_dict['table_name'] += [table_name]
-    mapping_dict['code_attr'] += [tech]
+    mapping_dict['code_attr'] += [code_attr]
     mapping_dict['describe_attr'] += [describe_attr]
     mapping_dict['describe_table'] += describe_table
     mapping_dict['colType'] += [colType]

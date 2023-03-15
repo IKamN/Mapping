@@ -16,6 +16,15 @@ def prepare_df(mapping_dict, meta_class,
     df_dag.loc[df_dag['alias'].str.endswith(('_hash', '_array')), 'colType'] = 'hash'
     df_dag.loc[df_dag['colType'] != 'hash', 'colType'] = 'string'
 
+    for ind in df_dag[['alias', 'tab_lvl']].index:
+        alias = df_dag.loc[ind, 'alias']
+        tab_lvl = df_dag.loc[ind, 'tab_lvl']
+        if tab_lvl != 0:
+            if (len(alias.split('_')) > 2) & \
+                    (alias not in tech_fields) & \
+                    ('_hash' not in alias):
+                df_dag.loc[ind, 'alias'] = '_'.join(alias.split('_')[1:])
+
     df_dag.loc[
         (df_dag['tab_lvl'] == 0) &
         ~(df_dag['code_attr'].str.lower().isin(tech_fields)) &
