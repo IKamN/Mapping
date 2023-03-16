@@ -8,8 +8,6 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
 
     df = pd.DataFrame(mapping_dict).sort_values(by=['table_name', 'code_attr'])
     df['code_attr']=df['code_attr'].apply(lambda x: x.replace('array', 'hash') if '_array' in x else x)
-
-    # df['code_attr'] = df.apply(lambda row: row['code_attr'].replace('array', 'hash') if row['colType'] == 'hash' else row['code_attr'], axis=1)
     df['check'] = df['code_attr']
     df.drop_duplicates(subset=['table_name', 'code_attr', 'colType'], inplace=True)
 
@@ -25,13 +23,15 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
                     ('_hash' not in code_attr.lower()) &\
                     ('_array' not in code_attr.lower()):
                 df.loc[ind, 'code_attr'] = '_'.join(code_attr.split('_')[1:])
+        if colType == 'hash':
+            df.loc[ind, 'colType'] = 'string'
 
 
     dup_indexes = df.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['code_attr'], keep=False)].index)
     for table, indexes in dup_indexes.items():
         for index in indexes:
             if not indexes.empty:
-                df.loc[index, 'code_attr'] = '_'.join(df.loc[index, 'check'].split('.')[-2:])+'_hash'
+                df.loc[index, 'code_attr'] = '_'.join(df.loc[index, 'check'].split('.')[1:])+'_hash'
 
     df = df.drop(['check'], axis = 1)
     df.insert(0, 'Схема1', f"prod_repl_subo_{database}")
@@ -154,7 +154,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
         for row in vertical_cells:
             for cell in row:
                 cell.alignment = Alignment(textRotation=90)
-        worksheet['Z2'].alignment = Alignment(textRotation=90)
+        worksheet['AB2'].alignment = Alignment(textRotation=90)
 
 
 
@@ -166,7 +166,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
         col_width = 3
         for col_num in range(15, 20):
             worksheet.column_dimensions[get_column_letter(col_num)].width = col_width
-        worksheet.column_dimensions[get_column_letter(26)].width = col_width
+        worksheet.column_dimensions[get_column_letter(28)].width = col_width
 
         merged_cell = worksheet['A1:B1']
         for row in merged_cell:
