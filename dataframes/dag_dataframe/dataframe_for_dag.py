@@ -13,7 +13,8 @@ def prepare_df(mapping_dict, meta_class,
 
     # prepare dataframe
     df_dag.drop(df_dag[df_dag['code_attr'].str.lower() == 'hdp_processed_dttm'].index, inplace=True)
-    df_dag['alias'] = df_dag['code_attr'].apply(lambda x: x.lower().replace('array', 'hash') if x.endswith('array') else x.lower())
+    df_dag['alias'] = df_dag['code_attr'].apply(lambda x: x.lower().replace('array', 'hash') if x.endswith('array')
+                                                else '_'.join(x.split('_')[1:] if len(x.split('_')) >= 2 else x).lower())
     df_dag.loc[df_dag['colType'] != 'hash', 'colType'] = 'string'
 
     old_map =''
@@ -27,18 +28,19 @@ def prepare_df(mapping_dict, meta_class,
 
 
     for ind in df_dag.index:
-        alias = df_dag.loc[ind, 'alias']
+        # alias = df_dag.loc[ind, 'alias']
         tab_lvl = df_dag.loc[ind, 'tab_lvl']
         code_attr = df_dag.loc[ind, 'code_attr']
         colType = df_dag.loc[ind, 'colType']
         if (colType == 'hash') & ('array' not in code_attr):
-            # df_dag.loc[ind, 'alias'] = '_'.join(code_attr.split('.')[-2:]).lower() + '_hash'
             df_dag.loc[ind, 'alias'] = code_attr.split('.')[-1].lower() + '_hash'
+        # else:
+        #     df_dag.loc[ind, 'alias'] = code_attr.split('_')[-1].lower()
         if tab_lvl != 0:
-            if (len(alias.split('_')) >= 2) & \
-                    (alias not in tech_fields) & \
-                    ('_hash' not in alias):
-                df_dag.loc[ind, 'alias'] = '_'.join(alias.split('_')[1:])
+            # if (len(alias.split('_')) >= 2) & \
+            #         (alias not in tech_fields) & \
+            #         ('_hash' not in alias):
+            #     df_dag.loc[ind, 'alias'] = '_'.join(alias.split('_')[2:])
             if 'hash' in code_attr:
                 df_dag.loc[ind, 'code_attr'] = df_dag.loc[ind, 'explodedColumns'].split(',')[-1].split('.')[-1] + '.' + code_attr.replace('_hash', '')
 
@@ -50,13 +52,13 @@ def prepare_df(mapping_dict, meta_class,
     # GET OUT DUPLICATES
     df_dag.drop_duplicates(subset=['table_name', 'code_attr', 'colType', 'alias'], inplace=True)
     df_dag['check'] = df_dag['code_attr']
-    dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['code_attr', 'alias'], keep=False)].index)
-    expl_check = []
+    dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['code_attr'], keep=False)].index)
     for table, indexes in dup_indexes.items():
+        expl_check = []
         for index in indexes:
             if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check) & (df_dag.loc[index, 'colType'] == 'hash'):
                 expl_check.append(df_dag.loc[index, 'code_attr'])
-                df_dag.loc[index, 'alias'] = '_'.join(df_dag.loc[index, 'check'].split('.')[1:]).lower() + '_hash'
+                df_dag.loc[index, 'alias'] = '_'.join(df_dag.loc[index, 'check'].split('_')[2:]).lower() + '_hash'
 
     # Пока костыль, доп проверка на дубли
     dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['alias'], keep=False)].index)
