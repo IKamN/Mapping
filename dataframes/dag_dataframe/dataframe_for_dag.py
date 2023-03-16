@@ -14,7 +14,6 @@ def prepare_df(mapping_dict, meta_class,
     # prepare dataframe
     df_dag.drop(df_dag[df_dag['code_attr'].str.lower() == 'hdp_processed_dttm'].index, inplace=True)
     df_dag['alias'] = df_dag['code_attr'].apply(lambda x: x.lower().replace('array', 'hash') if x.endswith('array') else x.lower())
-    df_dag.loc[df_dag['alias'].str.endswith(('_hash', '_array')), 'colType'] = 'hash'
     df_dag.loc[df_dag['colType'] != 'hash', 'colType'] = 'string'
 
     old_map =''
@@ -31,6 +30,10 @@ def prepare_df(mapping_dict, meta_class,
         alias = df_dag.loc[ind, 'alias']
         tab_lvl = df_dag.loc[ind, 'tab_lvl']
         code_attr = df_dag.loc[ind, 'code_attr']
+        colType = df_dag.loc[ind, 'colType']
+        if (colType == 'hash') & ('array' not in code_attr):
+            # df_dag.loc[ind, 'alias'] = '_'.join(code_attr.split('.')[-2:]).lower() + '_hash'
+            df_dag.loc[ind, 'alias'] = code_attr.split('.')[-1].lower() + '_hash'
         if tab_lvl != 0:
             if (len(alias.split('_')) >= 2) & \
                     (alias not in tech_fields) & \
@@ -38,30 +41,41 @@ def prepare_df(mapping_dict, meta_class,
                 df_dag.loc[ind, 'alias'] = '_'.join(alias.split('_')[1:])
             if 'hash' in code_attr:
                 df_dag.loc[ind, 'code_attr'] = df_dag.loc[ind, 'explodedColumns'].split(',')[-1].split('.')[-1] + '.' + code_attr.replace('_hash', '')
-        # print(df_dag.loc[ind, 'explodedColumns'])
 
-
-
-    df_dag.loc[
-        (df_dag['tab_lvl'] == 0) &
-        ~(df_dag['code_attr'].str.lower().isin(tech_fields)) &
-        (df_dag['colType'] != 'hash'), 'code_attr'
-    ] = 'payload.' + df_dag['code_attr']
 
     df_dag.loc[df_dag['colType'] != 'hash', 'code_attr'] = df_dag['code_attr'].apply(lambda x: x.replace('_', '.'))
+
+
+    # GET OUT DUPLICATES
+    df_dag['check'] = df_dag['code_attr']
+    dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['alias'], keep=False)].index)
+    expl_check = []
+    for table, indexes in dup_indexes.items():
+        for index in indexes:
+            if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check):
+                expl_check.append(df_dag.loc[index, 'code_attr'])
+                df_dag.loc[index, 'alias'] = '_'.join(df_dag.loc[index, 'check'].split('.')[-2:]).lower() + '_hash'
+
+    # Пока костыль, доп проверка на дубли
+    dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['alias'], keep=False)].index)
+    for table, indexes in dup_indexes.items():
+        for index in indexes:
+            if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check):
+                print('Еще остались дубли')
+            else:
+                print('Ок, дублей нет')
+
+
 
     df_dag['paths'] = df_dag.apply(
         lambda x: {'name': x['code_attr'], 'colType': x['colType'], 'alias': x['alias']} if x['code_attr'] not in tech_fields
         else {'name': x['code_attr'], 'colType': x['colType']}, axis=1)
 
-    df_dag.drop_duplicates(subset=['table_name','code_attr', 'colType', 'alias'], inplace=True)
-
-
     if df_dag['filter_condition'].nunique() > 1:
-        df_dag['preFilterCondition'] = df_dag['meta_class'].apply(lambda x: "value like \'%meta_:{_Class_:_" + x + "_}%\' and value like \'%Id_:_") + df_dag['filter_condition'].apply(lambda x: x+"%\'")
+        df_dag['preFilterCondition'] = df_dag['meta_class'].apply(lambda x: "value like \'%meta_:{_Class_:_" + x + "_%\' and value like \'%Id_:_") + df_dag['filter_condition'].apply(lambda x: x+"%\'")
         df_dag['postFilterCondition'] = df_dag['filter_condition'].apply(lambda x: "payload.Id = \'" + x +"\'")
     else:
-        df_dag['preFilterCondition'] = df_dag['meta_class'].apply(lambda x: "value like \'%meta_:{_Class_:_" + x + "_}%\'")
+        df_dag['preFilterCondition'] = df_dag['meta_class'].apply(lambda x: "value like \'%meta_:{_Class_:_" + x + "_%\'")
         df_dag['postFilterCondition'] = df_dag['meta_class'].apply(lambda x: "meta.Class = \'"+ x+"\'")
 
 
@@ -75,7 +89,7 @@ def prepare_df(mapping_dict, meta_class,
                 "schema": etl_schema,
                 "table": f'streaming_smart_replication_change_request_{topic}_default',
                 "columnsWithJson": ["value"],
-                "explodedColumns": [explodedColumns],
+                "explodedColumns": explodedColumns.split(', '),
                 "parsedColumns": paths,
                 "preFilterCondition": preFilterCondition,
                 "postFilterCondition": postFilterCondition,

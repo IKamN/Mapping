@@ -6,18 +6,32 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
     del mapping_dict['explodedColumns']
     del mapping_dict['filter_condition']
 
-    df = pd.DataFrame(mapping_dict).sort_values(by=['table_name'])
+    df = pd.DataFrame(mapping_dict).sort_values(by=['table_name', 'code_attr'])
     df['code_attr']=df['code_attr'].apply(lambda x: x.replace('array', 'hash') if '_array' in x else x)
 
-    for ind in df[['code_attr', 'tab_lvl']].index:
+    # df['code_attr'] = df.apply(lambda row: row['code_attr'].replace('array', 'hash') if row['colType'] == 'hash' else row['code_attr'], axis=1)
+    df['check'] = df['code_attr']
+    df.drop_duplicates(subset=['table_name', 'code_attr', 'colType'], inplace=True)
+
+    for ind in df.index:
         code_attr = df.loc[ind, 'code_attr']
         tab_lvl = df.loc[ind, 'tab_lvl']
+        colType= df.loc[ind, 'colType']
+        if (colType =='hash') & ('hash' not in code_attr):
+            df.loc[ind, 'code_attr'] = code_attr.split('.')[-1]+'_hash'
         if tab_lvl != 0:
             if (len(code_attr.split('_')) >= 2) & \
                     (code_attr not in tech_fields) & \
-                    ('_hash' not in code_attr.lower()):
+                    ('_hash' not in code_attr.lower()) &\
+                    ('_array' not in code_attr.lower()):
                 df.loc[ind, 'code_attr'] = '_'.join(code_attr.split('_')[1:])
 
+
+    dup_indexes = df.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['code_attr'], keep=False)].index)
+    for table, indexes in dup_indexes.items():
+        for index in indexes:
+            if not indexes.empty:
+                df.loc[index, 'code_attr'] = '_'.join(df.loc[index, 'check'].split('.')[-2:])+'_hash'
 
     df.reset_index(inplace=True)
     df.insert(1, 'База/Система1', base_system_target)
