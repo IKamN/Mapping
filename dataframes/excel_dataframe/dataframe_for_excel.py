@@ -1,5 +1,5 @@
 def save_excel(mapping_dict, xlsx_name, base_system_target,
-               base_system_source, id_is):
+               base_system_source, id_is, database):
     import pandas as pd
 
     tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
@@ -33,6 +33,8 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
             if not indexes.empty:
                 df.loc[index, 'code_attr'] = '_'.join(df.loc[index, 'check'].split('.')[-2:])+'_hash'
 
+    df = df.drop(['check'], axis = 1)
+    df.insert(0, 'Схема1', f"prod_repl_subo_{database}")
     df.reset_index(inplace=True)
     df.insert(1, 'База/Система1', base_system_target)
     df['Length'] = ""
@@ -44,7 +46,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
 
     df['index'] = pd.RangeIndex(start=1, stop=len(df) + 1, step=1)
 
-    df.rename(columns={'index': '#', 'table_name': 'Таблица1', 'code_attr': 'Код атрибута1', 'describe_attr': 'Описание атрибута1',
+    df.rename(columns={'index': '#', 'table_name': 'Таблица1', 'parent_table': 'Родительская таблица', 'code_attr': 'Код атрибута1', 'describe_attr': 'Описание атрибута1',
                        'describe_table': 'Описание таблицы1', 'comment': 'Комментарий1', 'colType': 'Тип данных1'}, inplace=True)
     df.insert(1, 'Тип объекта', 'Реплика')
 
@@ -108,20 +110,74 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
 
     with pd.ExcelWriter(f'{xlsx_name}', engine='openpyxl', mode='w') as writer:
         import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+
         df.to_excel(writer, sheet_name='Mapping', startrow=1, index = False)
         workbook = writer.book
         worksheet = writer.sheets['Mapping']
 
+        border = Border(left=Side(style='medium'),
+                        right=Side(style='medium'),
+                        top=Side(style='medium'),
+                        bottom=Side(style='medium'))
+
         # Add the headers to the first row
-        worksheet.cell(row=1, column=1).value = 'Source/Target'
+        st_cell = worksheet.cell(row = 1, column = 1)
+        st_cell.value = 'Source/Target'
+        st_cell.font = Font(bold=True)
         worksheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=2)
+        fiolet_fill = PatternFill(start_color='B2AFE0', end_color='B2AFE0', fill_type='solid')
+        for col in range(1, 3):
+            worksheet.cell(row=1, column=col).fill = fiolet_fill
+            worksheet.cell(row=2, column=col).fill = fiolet_fill
 
-        worksheet.cell(row=1, column=3).value = 'Source'
+        source_cell = worksheet.cell(row=1, column=3)
+        source_cell.value = 'Source'
+        source_cell.font = Font(bold=True)
         worksheet.merge_cells(start_row=1, start_column=3, end_row=1, end_column=19)
+        green_fill = PatternFill(start_color='84BD7F', end_color='84BD7F', fill_type='solid')
+        for col in range(3, 20):
+            worksheet.cell(row=1, column=col).fill = green_fill
+            worksheet.cell(row=2, column=col).fill = green_fill
 
-        worksheet.cell(row=1, column=20).value = 'Target'
+        target_cell = worksheet.cell(row=1, column=20)
+        target_cell.value = 'Target'
+        target_cell.font = Font(bold=True)
         worksheet.merge_cells(start_row=1, start_column=20, end_row=1, end_column=33)
+        blue_fill = PatternFill(start_color='69CAE8', end_color='69CAE8', fill_type='solid')
+        for col in range(20, 36):
+            worksheet.cell(row=1, column=col).fill = blue_fill
+            worksheet.cell(row=2, column=col).fill = blue_fill
+
+        vertical_cells = worksheet['O2:S2']
+        for row in vertical_cells:
+            for cell in row:
+                cell.alignment = Alignment(textRotation=90)
+        worksheet['Z2'].alignment = Alignment(textRotation=90)
+
+
 
         for i, col in enumerate(df.columns):
             column_length = max(df[col].astype(str).map(len).max(), len(col))
             worksheet.column_dimensions[openpyxl.utils.get_column_letter(i + 1)].width = column_length + 1
+
+        # set widths of columns O through S to 15
+        col_width = 3
+        for col_num in range(15, 20):
+            worksheet.column_dimensions[get_column_letter(col_num)].width = col_width
+        worksheet.column_dimensions[get_column_letter(26)].width = col_width
+
+        merged_cell = worksheet['A1:B1']
+        for row in merged_cell:
+            for cell in row:
+                cell.border = border
+        merged_cell = worksheet['C1:S2']
+        for row in merged_cell:
+            for cell in row:
+                cell.border = border
+        merged_cell = worksheet['T1:AI1']
+        for row in merged_cell:
+            for cell in row:
+                cell.border = border
+

@@ -3,6 +3,7 @@ tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm'
 def append_to_dict(mapping_dict, node_name, tab_lvl, table_name, code_attr, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
     mapping_dict['table_name'] += [table_name]
+    mapping_dict['parent_table'] += ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
     mapping_dict['code_attr'] += [code_attr]
     mapping_dict['describe_attr'] += [describe_attr]
     mapping_dict['describe_table'] += describe_table
@@ -132,6 +133,7 @@ def parsing_json(definitions, nodes, database):
     # [describe_table]      -- describe_table   (describe tables)
     # start_explodedColumns -- explodedColumns  (arrays in json)
     mapping_dict = {'table_name': [],
+                    'parent_table':[],
                     'code_attr': [],
                     'tab_lvl': [],
                     'describe_attr': [],

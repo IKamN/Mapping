@@ -54,16 +54,18 @@ def prepare_df(mapping_dict, meta_class,
         for index in indexes:
             if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check):
                 expl_check.append(df_dag.loc[index, 'code_attr'])
-                df_dag.loc[index, 'alias'] = '_'.join(df_dag.loc[index, 'check'].split('.')[-2:]).lower() + '_hash'
+                df_dag.loc[index, 'alias'] = '_'.join(df_dag.loc[index, 'check'].split('.')[1:]).lower() + '_hash'
 
     # Пока костыль, доп проверка на дубли
     dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['alias'], keep=False)].index)
     for table, indexes in dup_indexes.items():
         for index in indexes:
             if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check):
-                print('Еще остались дубли')
+                print('Еще остались дубли, смотреть таблицу', df_dag.loc[index, 'table_name'].split(', ')[-1],'\n',
+                      'Путь: ',df_dag.loc[index, 'code_attr'], '\nТекущее значение: ', df_dag.loc[index, 'alias'])
             else:
-                print('Ок, дублей нет')
+                pass
+                # print('Ок, дублей нет')
 
 
 

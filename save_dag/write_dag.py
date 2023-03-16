@@ -19,17 +19,16 @@ def write_file(params, flows):
                              flows))
 
     import re
-    # Define the old and new values for the schema variable
+    # Define the old and new values for the schema from config
     old_schema = r"'schema': '(\w+)'"
     new_schema = r"'schema': etl_schema"
 
-    # Open the file and read its contents
     with open(file_path, 'r') as f:
         contents = f.read()
 
-    # Replace the old value with the new value in the contents using regular expressions
+    # Replace the old value with the new value in the contents
     new_contents = re.sub(old_schema, new_schema, contents)
 
-    # Write the modified contents back to the file
+    # Write modified contents
     with open(file_path, 'w') as f:
         f.write(new_contents)
