@@ -1,6 +1,6 @@
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
-def append_to_dict(mapping_dict, node_name, tab_lvl, table_name, code_attr, describe_attr, describe_table, colType, explodedColumns):
+def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
     mapping_dict['table_name'] += [table_name]
     mapping_dict['parent_table'] += ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
@@ -10,6 +10,7 @@ def append_to_dict(mapping_dict, node_name, tab_lvl, table_name, code_attr, desc
     mapping_dict['colType'] += [colType]
     mapping_dict['explodedColumns'] += [explodedColumns]
     mapping_dict['filter_condition'] += [node_name]
+    mapping_dict['old_map'] += [code_attr + '_' + old_map]
 
 def handle_path(explodedColumns, new_path) -> list():
     handle_path = []
@@ -43,7 +44,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     if start_table not in mapping_dict['table_name']:
         # Add tech fileds
         for tech in tech_fields:
-            append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, tech, 'Техническое поле', describe_table,
+            append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, 'Техническое поле', describe_table,
                            'string' if tech != 'hdp_processed_dttm' else 'timestamp',
                            ', '.join(explodedColumns))
 
@@ -54,19 +55,19 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
         parent_table = '_'.join(start_table.split('_')[:-1])
 
         # Add in daughter
-        append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, array_field,
+        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, array_field,
                        describe_attr[-1] + f' (связь с {parent_table})' if len(describe_attr) > 0 else f' (связь с {parent_table})',
                        describe_table, 'hash', ', '.join(explodedColumns))
 
         # Add in parent
-        append_to_dict(mapping_dict, payload_node, tab_lvl-1, parent_table, hash_field,
+        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl-1, parent_table, hash_field,
                        describe_attr[-1] + f' (связь с {start_table})' if len(describe_attr) > 0 else f' (связь с {start_table})',
                        describe_table, 'hash', ', '.join(explodedColumns[:-1]))
 
 
     if not properties:
         handlePath = handle_path(explodedColumns, path)
-        append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
+        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
                        node[f'{description}'] if f'{description}' in node else '',
                        describe_table, node['type'] if 'type' in node else 'string', ', '.join(explodedColumns))
 
@@ -83,7 +84,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
                         listing_definition(mapping_dict, definitions, description, isRefs[0], payload_node, isRefs[1],tab_lvl, start_table, isRefs[2], describe_table, explodedColumns)
                     else:
                         handlePath = handle_path(explodedColumns, path+[key])
-                        append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), value[f'{description}'] if f'{description}' in value else '',
+                        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), value[f'{description}'] if f'{description}' in value else '',
                                        describe_table, value['type'] if 'type' in value else 'string', ', '.join(explodedColumns))
             elif value.get("type") == "array":
                 if 'anyOf' in value['items']:
@@ -93,7 +94,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
                             repeat_action(mapping_dict, tab_lvl, isRefs[0], payload_node, isRefs[1], key, value, isRefs[2], description, definitions, start_table, describe_table, explodedColumns)
                         else:
                             handlePath = handle_path(explodedColumns, path+[key])
-                            append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
+                            append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
                                            value[f'{description}'] if f'{description}' in value else '',
                                            describe_table, value['type'] if 'type' in value else 'string', ', '.join(explodedColumns))
                 else:
@@ -102,13 +103,13 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
                         repeat_action(mapping_dict, tab_lvl, isRefs[0], payload_node, isRefs[1], key, value, isRefs[2], description, definitions, start_table, describe_table, explodedColumns)
                     else:
                         handlePath = handle_path(explodedColumns, path+[key])
-                        append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
+                        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
                                        value[f'{description}'] if f'{description}' in value else '',
                                        describe_table, value['type'] if 'type' in value else 'string', ', '.join(explodedColumns))
 
             else:
                 handlePath = handle_path(explodedColumns, path+[key])
-                append_to_dict(mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
+                append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath),
                                value[f'{description}'] if f'{description}' in value else '',
                                describe_table, value['type'] if 'type' in value else 'string', ', '.join(explodedColumns))
 
@@ -141,7 +142,8 @@ def parsing_json(definitions, nodes, database):
                     'comment': '',
                     'colType': [],
                     'explodedColumns': [],
-                    'filter_condition': []
+                    'filter_condition': [],
+                    'old_map':[]
                     }
 
     for node in nodes:
@@ -153,5 +155,5 @@ def parsing_json(definitions, nodes, database):
         description = 'alias' if 'alias' in definitions[node] else 'title'
         listing_definition(mapping_dict, definitions, description, node, node, start_path, tab_lvl, start_table, [], [describe_table], start_explodedColumns)
 
-    # print({key:len(values) for key, values in mapping_dict.items()})
+    print({key:len(values) for key, values in mapping_dict.items()})
     return mapping_dict

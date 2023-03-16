@@ -4,7 +4,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
 
     tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
     del mapping_dict['explodedColumns']
-    del mapping_dict['filter_condition']
+    # del mapping_dict['filter_condition']
 
     df = pd.DataFrame(mapping_dict).sort_values(by=['table_name', 'code_attr'])
     df['code_attr']=df['code_attr'].apply(lambda x: x.replace('array', 'hash') if '_array' in x else x)
@@ -22,7 +22,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
                     (code_attr not in tech_fields) & \
                     ('_hash' not in code_attr.lower()) &\
                     ('_array' not in code_attr.lower()):
-                df.loc[ind, 'code_attr'] = '_'.join(code_attr.split('_')[1:])
+                df.loc[ind, 'code_attr'] = '_'.join(code_attr.split('.')[1:])
         if colType == 'hash':
             df.loc[ind, 'colType'] = 'string'
 
@@ -108,76 +108,76 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
     df.insert(18, 'Version', df.apply(insert_row, axis=1, args=['18']))
 
 
-    with pd.ExcelWriter(f'{xlsx_name}', engine='openpyxl', mode='w') as writer:
-        import openpyxl
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-        from openpyxl.utils import get_column_letter
-
-        df.to_excel(writer, sheet_name='Mapping', startrow=1, index = False)
-        workbook = writer.book
-        worksheet = writer.sheets['Mapping']
-
-        border = Border(left=Side(style='medium'),
-                        right=Side(style='medium'),
-                        top=Side(style='medium'),
-                        bottom=Side(style='medium'))
-
-        # Add the headers to the first row
-        st_cell = worksheet.cell(row = 1, column = 1)
-        st_cell.value = 'Source/Target'
-        st_cell.font = Font(bold=True)
-        worksheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=2)
-        fiolet_fill = PatternFill(start_color='B2AFE0', end_color='B2AFE0', fill_type='solid')
-        for col in range(1, 3):
-            worksheet.cell(row=1, column=col).fill = fiolet_fill
-            worksheet.cell(row=2, column=col).fill = fiolet_fill
-
-        source_cell = worksheet.cell(row=1, column=3)
-        source_cell.value = 'Source'
-        source_cell.font = Font(bold=True)
-        worksheet.merge_cells(start_row=1, start_column=3, end_row=1, end_column=19)
-        green_fill = PatternFill(start_color='84BD7F', end_color='84BD7F', fill_type='solid')
-        for col in range(3, 20):
-            worksheet.cell(row=1, column=col).fill = green_fill
-            worksheet.cell(row=2, column=col).fill = green_fill
-
-        target_cell = worksheet.cell(row=1, column=20)
-        target_cell.value = 'Target'
-        target_cell.font = Font(bold=True)
-        worksheet.merge_cells(start_row=1, start_column=20, end_row=1, end_column=33)
-        blue_fill = PatternFill(start_color='69CAE8', end_color='69CAE8', fill_type='solid')
-        for col in range(20, 36):
-            worksheet.cell(row=1, column=col).fill = blue_fill
-            worksheet.cell(row=2, column=col).fill = blue_fill
-
-        vertical_cells = worksheet['O2:S2']
-        for row in vertical_cells:
-            for cell in row:
-                cell.alignment = Alignment(textRotation=90)
-        worksheet['AB2'].alignment = Alignment(textRotation=90)
-
-
-
-        for i, col in enumerate(df.columns):
-            column_length = max(df[col].astype(str).map(len).max(), len(col))
-            worksheet.column_dimensions[openpyxl.utils.get_column_letter(i + 1)].width = column_length + 1
-
-        # set widths of columns O through S to 15
-        col_width = 3
-        for col_num in range(15, 20):
-            worksheet.column_dimensions[get_column_letter(col_num)].width = col_width
-        worksheet.column_dimensions[get_column_letter(28)].width = col_width
-
-        merged_cell = worksheet['A1:B1']
-        for row in merged_cell:
-            for cell in row:
-                cell.border = border
-        merged_cell = worksheet['C1:S2']
-        for row in merged_cell:
-            for cell in row:
-                cell.border = border
-        merged_cell = worksheet['T1:AI1']
-        for row in merged_cell:
-            for cell in row:
-                cell.border = border
+    # with pd.ExcelWriter(f'{xlsx_name}', engine='openpyxl', mode='w') as writer:
+    #     import openpyxl
+    #     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    #     from openpyxl.utils import get_column_letter
+    #
+    #     df.to_excel(writer, sheet_name='Mapping', startrow=1, index = False)
+    #     workbook = writer.book
+    #     worksheet = writer.sheets['Mapping']
+    #
+    #     border = Border(left=Side(style='medium'),
+    #                     right=Side(style='medium'),
+    #                     top=Side(style='medium'),
+    #                     bottom=Side(style='medium'))
+    #
+    #     # Add the headers to the first row
+    #     st_cell = worksheet.cell(row = 1, column = 1)
+    #     st_cell.value = 'Source/Target'
+    #     st_cell.font = Font(bold=True)
+    #     worksheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=2)
+    #     fiolet_fill = PatternFill(start_color='B2AFE0', end_color='B2AFE0', fill_type='solid')
+    #     for col in range(1, 3):
+    #         worksheet.cell(row=1, column=col).fill = fiolet_fill
+    #         worksheet.cell(row=2, column=col).fill = fiolet_fill
+    #
+    #     source_cell = worksheet.cell(row=1, column=3)
+    #     source_cell.value = 'Source'
+    #     source_cell.font = Font(bold=True)
+    #     worksheet.merge_cells(start_row=1, start_column=3, end_row=1, end_column=19)
+    #     green_fill = PatternFill(start_color='84BD7F', end_color='84BD7F', fill_type='solid')
+    #     for col in range(3, 20):
+    #         worksheet.cell(row=1, column=col).fill = green_fill
+    #         worksheet.cell(row=2, column=col).fill = green_fill
+    #
+    #     target_cell = worksheet.cell(row=1, column=20)
+    #     target_cell.value = 'Target'
+    #     target_cell.font = Font(bold=True)
+    #     worksheet.merge_cells(start_row=1, start_column=20, end_row=1, end_column=33)
+    #     blue_fill = PatternFill(start_color='69CAE8', end_color='69CAE8', fill_type='solid')
+    #     for col in range(20, 36):
+    #         worksheet.cell(row=1, column=col).fill = blue_fill
+    #         worksheet.cell(row=2, column=col).fill = blue_fill
+    #
+    #     vertical_cells = worksheet['O2:S2']
+    #     for row in vertical_cells:
+    #         for cell in row:
+    #             cell.alignment = Alignment(textRotation=90)
+    #     worksheet['AB2'].alignment = Alignment(textRotation=90)
+    #
+    #
+    #
+    #     for i, col in enumerate(df.columns):
+    #         column_length = max(df[col].astype(str).map(len).max(), len(col))
+    #         worksheet.column_dimensions[openpyxl.utils.get_column_letter(i + 1)].width = column_length + 1
+    #
+    #     # set widths of columns O through S to 15
+    #     col_width = 3
+    #     for col_num in range(15, 20):
+    #         worksheet.column_dimensions[get_column_letter(col_num)].width = col_width
+    #     worksheet.column_dimensions[get_column_letter(28)].width = col_width
+    #
+    #     merged_cell = worksheet['A1:B1']
+    #     for row in merged_cell:
+    #         for cell in row:
+    #             cell.border = border
+    #     merged_cell = worksheet['C1:S2']
+    #     for row in merged_cell:
+    #         for cell in row:
+    #             cell.border = border
+    #     merged_cell = worksheet['T1:AI1']
+    #     for row in merged_cell:
+    #         for cell in row:
+    #             cell.border = border
 

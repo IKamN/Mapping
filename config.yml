@@ -1,16 +1,16 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1364 Небанковские сервисы\'
-old_mapping_flag: ''
+file_dir: 'D:\Projects\VTB\Mapping_files\1498\'
+old_mapping_flag: 'yes'
 
-file_name: 'Небанковские_сервисы'
-base_system_source: 'Небанковские_сервисы'
+file_name: 'Карточка_ЮЛ'
+base_system_source: 'Карточка_ЮЛ'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
-docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2708461914'
+docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1214863127'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1364
+id_is: 1498
 loadType: 'Scd0Append'
-database: 'nobankserv'
-topic: "ztxa"
+database: 'csoc'
+topic: "csoc"
 colsToHash: ['']
