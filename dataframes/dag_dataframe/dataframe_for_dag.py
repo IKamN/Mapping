@@ -46,13 +46,15 @@ def prepare_df(mapping_dict, meta_class,
     df_dag.loc[df_dag['colType'] != 'hash', 'code_attr'] = df_dag['code_attr'].apply(lambda x: x.replace('_', '.'))
 
 
+
     # GET OUT DUPLICATES
+    df_dag.drop_duplicates(subset=['table_name', 'code_attr', 'colType', 'alias'], inplace=True)
     df_dag['check'] = df_dag['code_attr']
-    dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['alias'], keep=False)].index)
+    dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['code_attr', 'alias'], keep=False)].index)
     expl_check = []
     for table, indexes in dup_indexes.items():
         for index in indexes:
-            if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check):
+            if (not indexes.empty) & (df_dag.loc[index, 'explodedColumns'].split(', ')[-1] not in expl_check) & (df_dag.loc[index, 'colType'] == 'hash'):
                 expl_check.append(df_dag.loc[index, 'code_attr'])
                 df_dag.loc[index, 'alias'] = '_'.join(df_dag.loc[index, 'check'].split('.')[1:]).lower() + '_hash'
 
