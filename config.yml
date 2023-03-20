@@ -1,16 +1,16 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1498\'
-old_mapping_flag: 'yes'
+file_dir: 'D:\Projects\VTB\Mapping_files\1447_8\'
+old_mapping_flag: 'no'
 
-file_name: 'Карточка_ЮЛ'
-base_system_source: 'Карточка_ЮЛ'
+file_name: 'Сервис_привлечения_и_удержания_VIP_и_Привилегия'
+base_system_source: 'Сервис_привлечения_и_удержания_VIP_и_Привилегия'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
-docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1214863127'
+docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1089443760'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1498
+id_is: 1447_8
 loadType: 'Scd0Append'
-database: 'csoc'
-topic: "csoc"
+database: 'tbcv'
+topic: "tbcvsofk"
 colsToHash: ['']
