@@ -92,7 +92,7 @@ spark_conf = {
 }
 
 common_info = {
-  "targetSchema": target_db,
+  "targetSchema": etl_schema,
   "etlSchema": etl_schema_kafka,
   "logsTable": vault_conf["psqlStatusTable"],
   "vault": vault_conf,
@@ -169,7 +169,8 @@ with DAG(
   default_args=default_args,
   tags=['SparkETL', 'VaultSETL', 'Subo'],
   schedule_interval='0 */3 * * *',
-  catchup=False
+  catchup=False,
+  max_active_runs=1
 ) as dag:
       load_kafka = spark_operator("load_kafka", f'{DAG_ID}.load_kafka', load_kafka_json)
       load_status = PythonOperator(task_id="check_previous_runs", python_callable=check_previous_runs)
