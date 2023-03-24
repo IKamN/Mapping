@@ -41,10 +41,12 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     node = definitions.get(node_name)
     properties = node.get("properties", {})
 
-    if start_table not in mapping_dict['table_name']:
+
+    if start_table in mapping_dict['table_name'] and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
         # Add tech fileds
         for tech in tech_fields:
-            append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, 'Техническое поле', describe_table,
+            append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, 'Техническое поле',
+                           describe_table,
                            'string' if tech != 'hdp_processed_dttm' else 'timestamp',
                            ', '.join(explodedColumns))
 

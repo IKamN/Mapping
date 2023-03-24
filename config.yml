@@ -1,16 +1,16 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1447_8\'
+file_dir: 'D:\Projects\VTB\Mapping_files\1593\'
 old_mapping_flag: 'no'
 
-file_name: 'Сервис_привлечения_и_удержания_VIP_и_Привилегия'
-base_system_source: 'Сервис_привлечения_и_удержания_VIP_и_Привилегия'
+file_name: 'ОС_ИСУ_Риск-Андеррайтера'
+base_system_source: 'ОС_ИСУ_Риск-Андеррайтера'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
 docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1089443760'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1447_8
+id_is: 1593
 loadType: 'Scd0Append'
-database: 'tbcv'
-topic: "tbcvsofk"
+database: 'isra'
+topic: "isramra"
 colsToHash: ['']
