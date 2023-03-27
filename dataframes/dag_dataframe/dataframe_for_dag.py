@@ -24,7 +24,7 @@ def prepare_df(mapping_dict, meta_class,
         code_attr = df_dag.loc[ind, 'code_attr']
         colType = df_dag.loc[ind, 'colType']
         if (colType == 'hash') & ('array' not in code_attr):
-            df_dag.loc[ind, 'alias'] = code_attr.split('.')[-1].lower() + '_hash'
+            df_dag.loc[ind, 'alias'] = ''.join(code_attr.split('.')[1:]).lower() + '_hash'
         # else:
         #     df_dag.loc[ind, 'alias'] = code_attr.split('_')[-1].lower()
         if tab_lvl != 0:
@@ -112,7 +112,6 @@ def prepare_df(mapping_dict, meta_class,
         df_dag['postFilterCondition'] = df_dag['meta_class'].apply(lambda x: "meta.Class = \'"+ x+"\'")
 
     grouped = df_dag.groupby(['table_name', 'explodedColumns', 'preFilterCondition', 'postFilterCondition'])['paths'].apply(list).reset_index()
-
 
     flows = [
         {

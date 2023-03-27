@@ -22,10 +22,11 @@ def handle_path(explodedColumns, new_path) -> list():
 def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, value, describe_attr, description, definitions, start_table, describe_table, explodedColumns):
     tab_lvl += 1
     new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
-    new_table = start_table + "_" + key
+    # new_table = start_table + "_" + key #Short name but with duplicates
     new_describe_table = [definitions.get(next_node)[f'{description}']] if f'{description}' in definitions.get(
         next_node) else describe_table
     explodedColumns.append('.'.join(path))
+    new_table = start_table + "_" + ''.join(path[1:]) # Long name but without duplicates
     listing_definition(mapping_dict, definitions, description, next_node, payload_node, path, tab_lvl, new_table, new_describe_attr, new_describe_table, explodedColumns)
     explodedColumns.pop()
     tab_lvl -= 1
@@ -53,7 +54,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     # Add hash fileds
     if (tab_lvl != 0) & (explodedColumns[-1] not in mapping_dict['code_attr']):
         hash_field = explodedColumns[-1]
-        array_field = explodedColumns[-1].split('.')[-1] + '_array'
+        array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'
         parent_table = '_'.join(start_table.split('_')[:-1])
 
         # Add in daughter

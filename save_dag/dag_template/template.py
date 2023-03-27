@@ -51,7 +51,8 @@ keytab_name = spark_etl_config["KEYTAB"]
 principal = spark_etl_config["PRINCIPAL"]
 keytab = os.path.join(keytab_dir, keytab_name)
 truststore_path = spark_etl_config["subo_truststore_path"]
-keystore_path = spark_etl_config["subo_keystore_path"]""" + '\n' \
+keystore_path = spark_etl_config["subo_keystore_path"]
+logs_table = vault_conf["psqlStatusTable"]""" + '\n' \
           + \
           f"""
 if stage == "d0":
@@ -94,7 +95,7 @@ spark_conf = {
 common_info = {
   "targetSchema": etl_schema,
   "etlSchema": etl_schema_kafka,
-  "logsTable": vault_conf["psqlStatusTable"],
+  "logsTable": logs_table,
   "vault": vault_conf,
   """ \
 + \
@@ -105,7 +106,7 @@ f'"flagName": {id_is}' + '\n' \
 hive_common_info = {
   "targetSchema": target_db,
   "etlSchema": etl_schema,
-  "logsTable": vault_conf["psqlStatusTable"],
+  "logsTable": logs_table,
   "vault": vault_conf,
   """ \
 + \
