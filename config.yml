@@ -1,16 +1,16 @@
-file_dir: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/1593/'
+file_dir: 'D:\Projects\VTB\Mapping_files\1630\'
 old_mapping_flag: 'no'
 
-file_name: 'ОС_ИСУ_Риск-Андеррайтера'
-base_system_source: 'ОС_ИСУ_Риск-Андеррайтера'
+file_name: 'Полномочия_представителя_ЮЛ'
+base_system_source: 'Полномочия_представителя_ЮЛ'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
-docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1089443760'
+docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2863043647'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1593
+id_is: 1630
 loadType: 'Scd0Append'
-database: 'isra'
-topic: "isramra"
+database: 'oacs'
+topic: "oacs"
 colsToHash: ['']

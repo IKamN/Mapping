@@ -116,7 +116,7 @@ f'"flagName": {id_is}' \
 + '\n' \
 """
 load_kafka_json = {
-        "connection": "1642_19_datalake_loadsubo_kafka",
+        "connection": "1642_19_datalake_subo_kafka_load_otpl",
         "commonInfo": common_info,
         "flows": [
             {
