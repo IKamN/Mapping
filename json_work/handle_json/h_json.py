@@ -1,3 +1,5 @@
+import re
+
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, describe_attr, describe_table, colType, explodedColumns):
@@ -26,7 +28,8 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
     new_describe_table = [definitions.get(next_node)[f'{description}']] if f'{description}' in definitions.get(
         next_node) else describe_table
     explodedColumns.append('.'.join(path))
-    new_table = start_table + "_" + ''.join(path[1:]) # Long name but without duplicates
+    # print(''.join(path[1:]))
+    new_table = start_table + "_" + '_'.join(path[1:]) # Long name but without duplicates
     listing_definition(mapping_dict, definitions, description, next_node, payload_node, path, tab_lvl, new_table, new_describe_attr, new_describe_table, explodedColumns)
     explodedColumns.pop()
     tab_lvl -= 1
@@ -38,12 +41,60 @@ def check_ref(value, path, key, describe_attr, description, explodedColumns):
         new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
         return [next_node, explodedPath, new_describe_attr]
 
+
+def shorten_string(start_table):
+    tmp = start_table.split('_')[1:]
+    prefix = start_table.split('_')[0]
+    for i in range(0, len(tmp)-1):
+        for l in : #range(len(tmp[i])-1, 0, -1): tmp[i][-1:]
+            print(l)
+            if re.search('[A-Z]', l):
+                # print(tmp[i][(tmp[i].index(l) + r + 1)])
+                for r in range(3, 7):
+                    if tmp[i][tmp[i].index(l) + r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
+                        tmp[i] = tmp[i][0:(tmp[i].index(l)+r+1)]
+                        break
+                break
+        if len(prefix + '_' + '_'.join(tmp)) > 60:
+            continue
+        else:
+            break
+        # else:
+        #     for i in range(0, len(tmp[i])-1):
+        #         upper_index = [l for l in tmp[i][l] if re.search('[A-Z]', tmp[i][l])]
+        #         for u in upper_index:
+        #             if len(upper_index) >= 2:
+        #                 for r in range(3, 7):
+        #                     if tmp[i][u+r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
+        #                         tmp[i] = tmp[i][0:(u+r+1)] + tmp[]
+        #                         break
+        #                 if len(prefix+'_'+'_'.join(tmp)) > 60:
+        #                     continue
+        #                 else:
+        #                     break
+        #             else:
+        #                 for r in range(3, 7):
+        #                     if tmp[i][u+r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
+        #                         tmp[i] = tmp[i][0:(u+r+1)]
+        #                         break
+        #                 if len(prefix+'_'+'_'.join(tmp)) > 60:
+        #                     continue
+        #                 else:
+        #                     break
+
+    # print(prefix + '_' + '_'.join(tmp), '  ', len(prefix + '_' + '_'.join(tmp)))
+    # return prefix + '_' + '_'.join(tmp)
+
+
 def listing_definition(mapping_dict, definitions, description, node_name, payload_node, path, tab_lvl, start_table, describe_attr, describe_table, explodedColumns):
     node = definitions.get(node_name)
     properties = node.get("properties", {})
 
+    if len(start_table) >= 60:
+        shorten_string(start_table)
 
-    if start_table in mapping_dict['table_name'] and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
+    if (start_table not in mapping_dict['table_name']) and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
+        # print(len(start_table), ' ', start_table)
         # Add tech fileds
         for tech in tech_fields:
             append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, 'Техническое поле',
@@ -158,5 +209,5 @@ def parsing_json(definitions, nodes, database):
         description = 'alias' if 'alias' in definitions[node] else 'title'
         listing_definition(mapping_dict, definitions, description, node, node, start_path, tab_lvl, start_table, [], [describe_table], start_explodedColumns)
 
-    print({key:len(values) for key, values in mapping_dict.items()})
+    # print({key:len(values) for key, values in mapping_dict.items()})
     return mapping_dict

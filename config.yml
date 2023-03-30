@@ -1,16 +1,16 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1630\'
+file_dir: 'D:\Projects\VTB\Mapping_files\1593\'
 old_mapping_flag: 'no'
 
-file_name: 'Полномочия_представителя_ЮЛ'
-base_system_source: 'Полномочия_представителя_ЮЛ'
+file_name: 'Маркетинговые предложения ЮЛ'
+base_system_source: 'Маркетинговые предложения ЮЛ'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
 docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2863043647'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1630
+id_is: 1593
 loadType: 'Scd0Append'
-database: 'oacs'
-topic: "oacs"
+database: 'isra'
+topic: "isramra"
 colsToHash: ['']

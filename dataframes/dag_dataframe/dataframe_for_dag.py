@@ -19,7 +19,6 @@ def prepare_df(mapping_dict, meta_class,
     df_dag.loc[df_dag['colType'] != 'hash', 'colType'] = 'string'
 
     for ind in df_dag.index:
-        # alias = df_dag.loc[ind, 'alias']
         tab_lvl = df_dag.loc[ind, 'tab_lvl']
         code_attr = df_dag.loc[ind, 'code_attr']
         colType = df_dag.loc[ind, 'colType']
