@@ -7,6 +7,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
     del mapping_dict['filter_condition']
     del mapping_dict['old_map']
 
+
     df = pd.DataFrame(mapping_dict).sort_values(by=['table_name', 'code_attr'])
     df['code_attr'] = df['code_attr'].apply(lambda x: x.replace('array', 'hash') if '_array' in x else x)
     # df = df.apply(lambda x: x['code_attr'].replace(x['explodedColumns'].split(', ')[-1],''))
@@ -48,8 +49,16 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
 
     df['index'] = pd.RangeIndex(start=1, stop=len(df) + 1, step=1)
 
-    df.rename(columns={'index': '#', 'table_name': 'Таблица1', 'parent_table': 'Родительская таблица', 'code_attr': 'Код атрибута1', 'describe_attr': 'Описание атрибута1',
-                       'describe_table': 'Описание таблицы1', 'comment': 'Комментарий1', 'colType': 'Тип данных1'}, inplace=True)
+    if len(mapping_dict['short_name']) == 0:
+        del mapping_dict['short_name']
+        df.rename(columns={'index': '#', 'table_name': 'Таблица1', 'parent_table': 'Родительская таблица', 'code_attr': 'Код атрибута1', 'describe_attr': 'Описание атрибута1',
+                           'describe_table': 'Описание таблицы1', 'comment': 'Комментарий1', 'colType': 'Тип данных1'}, inplace=True)
+    else:
+        df.rename(columns={'index': '#', 'table_name': 'Таблица1', 'short_name':'Сокращенное имя', 'parent_table': 'Родительская таблица',
+                           'code_attr': 'Код атрибута1', 'describe_attr': 'Описание атрибута1',
+                           'describe_table': 'Описание таблицы1', 'comment': 'Комментарий1', 'colType': 'Тип данных1'},
+                  inplace=True)
+
     df.insert(1, 'Тип объекта', 'Реплика')
 
     def insert_row(row, number):
@@ -148,7 +157,7 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
         target_cell.font = Font(bold=True)
         worksheet.merge_cells(start_row=1, start_column=20, end_row=1, end_column=33)
         blue_fill = PatternFill(start_color='69CAE8', end_color='69CAE8', fill_type='solid')
-        for col in range(20, 36):
+        for col in range(20, df.shape[1]+1):
             worksheet.cell(row=1, column=col).fill = blue_fill
             worksheet.cell(row=2, column=col).fill = blue_fill
 
@@ -156,7 +165,10 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
         for row in vertical_cells:
             for cell in row:
                 cell.alignment = Alignment(textRotation=90)
-        worksheet['AB2'].alignment = Alignment(textRotation=90)
+        if 'Сокращенное имя' in df.columns:
+            worksheet['AC2'].alignment = Alignment(textRotation=90)
+        else:
+            worksheet['AB2'].alignment = Alignment(textRotation=90)
 
 
 
@@ -166,9 +178,13 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
 
         # set widths of columns O through S to 15
         col_width = 3
+
         for col_num in range(15, 20):
             worksheet.column_dimensions[get_column_letter(col_num)].width = col_width
-        worksheet.column_dimensions[get_column_letter(28)].width = col_width
+        if 'Сокращенное имя' not in df.columns:
+            worksheet.column_dimensions[get_column_letter(28)].width = col_width
+        else:
+            worksheet.column_dimensions[get_column_letter(29)].width = col_width
 
         merged_cell = worksheet['A1:B1']
         for row in merged_cell:

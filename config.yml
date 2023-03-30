@@ -1,8 +1,8 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1593\'
+file_dir: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/1593'
 old_mapping_flag: 'no'
 
-file_name: 'Маркетинговые предложения ЮЛ'
-base_system_source: 'Маркетинговые предложения ЮЛ'
+file_name: 'ису'
+base_system_source: 'ису'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 

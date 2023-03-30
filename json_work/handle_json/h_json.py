@@ -5,6 +5,7 @@ tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm'
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
     mapping_dict['table_name'] += [table_name]
+    mapping_dict['short_name'] += [shorten_string(table_name)] if len(table_name) > 60 else ['']
     mapping_dict['parent_table'] += ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
     mapping_dict['code_attr'] += [code_attr]
     mapping_dict['describe_attr'] += [describe_attr]
@@ -13,6 +14,7 @@ def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_a
     mapping_dict['explodedColumns'] += [explodedColumns]
     mapping_dict['filter_condition'] += [node_name]
     mapping_dict['old_map'] += [code_attr + '_' + old_map]
+
 
 def handle_path(explodedColumns, new_path) -> list():
     handle_path = []
@@ -28,8 +30,7 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
     new_describe_table = [definitions.get(next_node)[f'{description}']] if f'{description}' in definitions.get(
         next_node) else describe_table
     explodedColumns.append('.'.join(path))
-    # print(''.join(path[1:]))
-    new_table = start_table + "_" + '_'.join(path[1:]) # Long name but without duplicates
+    new_table = start_table + "_" + ''.join(path[1:]) # Long name but without duplicates
     listing_definition(mapping_dict, definitions, description, next_node, payload_node, path, tab_lvl, new_table, new_describe_attr, new_describe_table, explodedColumns)
     explodedColumns.pop()
     tab_lvl -= 1
@@ -46,55 +47,52 @@ def shorten_string(start_table):
     tmp = start_table.split('_')[1:]
     prefix = start_table.split('_')[0]
     for i in range(0, len(tmp)-1):
-        for l in : #range(len(tmp[i])-1, 0, -1): tmp[i][-1:]
-            print(l)
-            if re.search('[A-Z]', l):
-                # print(tmp[i][(tmp[i].index(l) + r + 1)])
-                for r in range(3, 7):
-                    if tmp[i][tmp[i].index(l) + r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
-                        tmp[i] = tmp[i][0:(tmp[i].index(l)+r+1)]
+        if i == 0:
+            for l in range(len(tmp[i])-1, 0, -1):
+                if re.search('[A-Z]', tmp[i][l]):
+                    # print(tmp[i][(tmp[i].index(l) + r + 1)])
+                    for r in range(3, 7):
+                        if tmp[i][l + r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
+                            tmp[i] = tmp[i][0:l+r+1]
+                            break
+                    break
+        else:
+            parts = re.findall('[A-Z][^A-Z]*', tmp[i])
+            if len(parts)>1:
+                for k in range(0, len(parts)):
+                    for l in range(0, len(parts[k])):
+                        if re.search('[A-Z]', parts[k][l]):
+                            for r in range(3, 7):
+                                if parts[k][r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
+                                    tmp[i] = tmp[i].replace(parts[k], parts[k][0:r+1])
+                                    break
+                            break
+                    if len(prefix + '_' + '_'.join(tmp)) > 60:
+                        continue
+                    else:
                         break
-                break
+            else:
+                for l in range(0, len(parts)):
+                    if re.search('[A-Z]', parts[0]):
+                        for r in range(3, 7):
+                            if tmp[i][r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
+                                tmp[i] = tmp[i][0:r+1]
+                                break
+                        break
         if len(prefix + '_' + '_'.join(tmp)) > 60:
             continue
         else:
             break
-        # else:
-        #     for i in range(0, len(tmp[i])-1):
-        #         upper_index = [l for l in tmp[i][l] if re.search('[A-Z]', tmp[i][l])]
-        #         for u in upper_index:
-        #             if len(upper_index) >= 2:
-        #                 for r in range(3, 7):
-        #                     if tmp[i][u+r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
-        #                         tmp[i] = tmp[i][0:(u+r+1)] + tmp[]
-        #                         break
-        #                 if len(prefix+'_'+'_'.join(tmp)) > 60:
-        #                     continue
-        #                 else:
-        #                     break
-        #             else:
-        #                 for r in range(3, 7):
-        #                     if tmp[i][u+r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
-        #                         tmp[i] = tmp[i][0:(u+r+1)]
-        #                         break
-        #                 if len(prefix+'_'+'_'.join(tmp)) > 60:
-        #                     continue
-        #                 else:
-        #                     break
 
     # print(prefix + '_' + '_'.join(tmp), '  ', len(prefix + '_' + '_'.join(tmp)))
-    # return prefix + '_' + '_'.join(tmp)
+    return prefix + '_' + '_'.join(tmp)
 
 
 def listing_definition(mapping_dict, definitions, description, node_name, payload_node, path, tab_lvl, start_table, describe_attr, describe_table, explodedColumns):
     node = definitions.get(node_name)
     properties = node.get("properties", {})
 
-    if len(start_table) >= 60:
-        shorten_string(start_table)
-
     if (start_table not in mapping_dict['table_name']) and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
-        # print(len(start_table), ' ', start_table)
         # Add tech fileds
         for tech in tech_fields:
             append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, 'Техническое поле',
@@ -135,7 +133,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
                 for ref in value["anyOf"]:
                     if '$ref' in ref:
                         isRefs = check_ref(ref, path, key, describe_attr, description, explodedColumns)
-                        listing_definition(mapping_dict, definitions, description, isRefs[0], payload_node, isRefs[1],tab_lvl, start_table, isRefs[2], describe_table, explodedColumns)
+                        listing_definition(mapping_dict, definitions, description, isRefs[0], payload_node, isRefs[1],tab_lvl, start_table, short_table_name, isRefs[2], describe_table, explodedColumns)
                     else:
                         handlePath = handle_path(explodedColumns, path+[key])
                         append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), value[f'{description}'] if f'{description}' in value else '',
@@ -188,6 +186,7 @@ def parsing_json(definitions, nodes, database):
     # [describe_table]      -- describe_table   (describe tables)
     # start_explodedColumns -- explodedColumns  (arrays in json)
     mapping_dict = {'table_name': [],
+                    'short_name': [],
                     'parent_table':[],
                     'code_attr': [],
                     'tab_lvl': [],
