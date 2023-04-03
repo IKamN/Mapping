@@ -5,6 +5,7 @@ def prepare_df(mapping_dict, meta_class,
 
     df_dag = pd.DataFrame({'table_name': mapping_dict['table_name'],
                            'code_attr': mapping_dict['code_attr'],
+                           'new_alias': mapping_dict['alias'],
                            'tab_lvl': mapping_dict['tab_lvl'],
                            'colType': mapping_dict['colType'],
                            'explodedColumns': mapping_dict['explodedColumns'],
@@ -100,7 +101,7 @@ def prepare_df(mapping_dict, meta_class,
     # ---------------------------------------------------------------------------------------------------------------------
 
     df_dag['paths'] = df_dag.apply(
-        lambda x: {'name': x['code_attr'], 'colType': x['colType'], 'alias': x['alias']} if x['code_attr'] not in tech_fields
+        lambda x: {'name': x['code_attr'], 'colType': x['colType'], 'alias': x['new_alias']} if x['code_attr'] not in tech_fields
         else {'name': x['code_attr'], 'colType': x['colType']}, axis=1)
 
     if df_dag['filter_condition'].nunique() > 1:
