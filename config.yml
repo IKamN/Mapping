@@ -1,16 +1,16 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1387'
+file_dir: 'D:\Projects\VTB\Mapping_files\1465'
 old_mapping_flag: 'no'
 
-file_name: 'Переводы'
-base_system_source: 'Переводы'
+file_name: 'Таможенные_сервисы'
+base_system_source: 'Таможенные сервисы'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
 docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2850376288'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1387
+id_is: 1465
 loadType: 'Scd0Append'
-database: 'trns'
-topic: "trns"
+database: 'cssc'
+topic: "cssc"
 colsToHash: ['']
