@@ -40,18 +40,10 @@ def check_ref(value, path, key, describe_attr, description, explodedColumns, ali
         new_alias = ['']
         if flag_alias is not None:
             new_ref = ''.join(next_node)
-            # split_key = re.split('(?<=.)(?=[A-Z])', key)[-1]
-            # split_ref = re.split('(?<=.)(?=[A-Z])', new_ref)
-            # split_ref = split_ref[:-2]
-            # index_split = split_ref.index(split_key)
-            # new_alias = path + [''.join(split_ref[index_split:])]
-            # new_alias = path + [''.join(split_ref)]
             new_alias = alias + [next_node]
         else:
             new_alias = alias + [key] if alias != [''] else [key]
-
         new_path = path + [key]
-
         explodedPath = handle_path(explodedColumns, new_path)
         new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
         return [next_node, explodedPath, new_describe_attr, new_alias]
@@ -131,7 +123,6 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
 
     if not properties:
         handlePath = handle_path(explodedColumns, path)
-        # tmp_alias = '_'.join(handlePath[1:]).lower() if alias == '' else ('_'.join(handlePath[1:]) + '_' + '_'.join(alias)).lower()
         tmp_alias = '_'.join(handlePath[1:]).lower() if alias == '' else ('_'.join(alias)).lower()
         print(tmp_alias)
         append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), tmp_alias,
@@ -143,14 +134,11 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
         if isinstance(value, dict):
             if "$ref" in value:
                 isRefs = check_ref(value, path, key, describe_attr, description, explodedColumns, alias)
-                # print(isRefs[3])
                 listing_definition(mapping_dict, definitions, description, isRefs[0], payload_node, isRefs[1], tab_lvl, start_table, isRefs[2], describe_table, explodedColumns, isRefs[3])
             elif "anyOf" in value:
                 for ref in value["anyOf"]:
                     if '$ref' in ref:
-                        # print(ref, '    ', path, '    ', alias)
                         isRefs = check_ref(ref, path, key, describe_attr, description, explodedColumns, alias, '1')
-                        # print(isRefs[3])
                         listing_definition(mapping_dict, definitions, description, isRefs[0], payload_node, isRefs[1], tab_lvl, start_table, isRefs[2], describe_table, explodedColumns, isRefs[3])
                     else:
                         handlePath = handle_path(explodedColumns, path+[key])
@@ -179,9 +167,8 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
 
             else:
                 handlePath = handle_path(explodedColumns, path+[key])
-                tmp_alias = '_'.join(handlePath[1:]).lower() if alias == '' else ('_'.join(handlePath[1:] + alias)).lower()
-                # print(alias)
-                append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), '_'.join(alias + [key]).lower(),
+                tmp_alias = key.lower() if alias == [''] else  '_'.join(alias + [key]).lower()
+                append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), tmp_alias,
                                value[f'{description}'] if f'{description}' in value else '',
                                describe_table, value['type'] if 'type' in value else 'string', ', '.join(explodedColumns))
 

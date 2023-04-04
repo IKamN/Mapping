@@ -1,7 +1,6 @@
 def prepare_df(mapping_dict, meta_class,
                tech_fields, loadType, colsToHash, topic, etl_schema, file_dir, json_file=None):
     import pandas as pd
-    import os
 
     df_dag = pd.DataFrame({'table_name': mapping_dict['table_name'],
                            'code_attr': mapping_dict['code_attr'],
@@ -25,13 +24,7 @@ def prepare_df(mapping_dict, meta_class,
         colType = df_dag.loc[ind, 'colType']
         if (colType == 'hash') & ('array' not in code_attr):
             df_dag.loc[ind, 'alias'] = ''.join(code_attr.split('.')[1:]).lower() + '_hash'
-        # else:
-        #     df_dag.loc[ind, 'alias'] = code_attr.split('_')[-1].lower()
         if tab_lvl != 0:
-            # if (len(alias.split('_')) >= 2) & \
-            #         (alias not in tech_fields) & \
-            #         ('_hash' not in alias):
-            #     df_dag.loc[ind, 'alias'] = '_'.join(alias.split('_')[2:])
             if 'hash' in code_attr:
                 df_dag.loc[ind, 'code_attr'] = df_dag.loc[ind, 'explodedColumns'].split(',')[-1].split('.')[-1] + '.' + code_attr.replace('_hash', '')
 
@@ -39,8 +32,6 @@ def prepare_df(mapping_dict, meta_class,
     df_dag.loc[df_dag['colType'] != 'hash', 'code_attr'] = df_dag['code_attr'].apply(lambda x: x.replace('_', '.'))
 
 
-
-    # GET OUT DUPLICATES
     # df_dag.drop_duplicates(subset=['table_name', 'code_attr', 'colType', 'alias'], inplace=True)
     # df_dag['check'] = df_dag['code_attr']
     # dup_indexes = df_dag.groupby('table_name').apply(lambda x: x[x.duplicated(subset=['alias'], keep=False)].index)
