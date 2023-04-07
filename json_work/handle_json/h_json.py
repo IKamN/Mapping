@@ -67,7 +67,7 @@ def shorten_string(start_table):
                 for k in range(0, len(parts)):
                     for l in range(0, len(parts[k])):
                         if re.search('[A-Z]', parts[k][l]):
-                            for r in range(3, 7):
+                            for r in range(2, 7):
                                 if parts[k][r] in ['b','c','d','f','g','h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']:
                                     tmp[i] = tmp[i].replace(parts[k], parts[k][0:r+1])
                                     break

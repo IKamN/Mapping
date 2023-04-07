@@ -1,16 +1,17 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1465'
-old_mapping_flag: 'no'
+file_dir: 'D:\Projects\VTB\Mapping_files\1498'
+check_dir: 'D:\Projects\VTB\Mapping_files\1593\checks'
 
+old_mapping_flag: 'no'
 file_name: 'Таможенные_сервисы'
 base_system_source: 'Таможенные сервисы'
 base_system_target: '1642_19 Озеро данных'
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 
-docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2850376288'
+docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2214291857'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1465
-loadType: 'Scd0Append'
-database: 'cssc'
-topic: "cssc"
+id_is: 1498
+loadType: 'Scd0AppendPartition'
+database: 'csoc'
+topic: "csoc"
 colsToHash: ['']
