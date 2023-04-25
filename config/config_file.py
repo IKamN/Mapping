@@ -21,6 +21,7 @@ def read_config():
             'database': raw['database'],
             'topic': raw['topic'],
             'colsToHash': raw['colsToHash'],
+            'mapping_version' :raw['mapping_version']
         }
 
     return params

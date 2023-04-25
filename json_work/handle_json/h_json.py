@@ -124,7 +124,6 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     if not properties:
         handlePath = handle_path(explodedColumns, path)
         tmp_alias = '_'.join(handlePath[1:]).lower() if alias == '' else ('_'.join(alias)).lower()
-        print(tmp_alias)
         append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, '_'.join(handlePath), tmp_alias,
                        node[f'{description}'] if f'{description}' in node else '',
                        describe_table, node['type'] if 'type' in node else 'string', ', '.join(explodedColumns))

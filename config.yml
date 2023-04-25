@@ -1,17 +1,18 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1498'
-check_dir: 'D:\Projects\VTB\Mapping_files\1593\checks'
+file_dir: 'D:\Projects\VTB\Mapping_files\1612_2\Json'
+check_dir: 'D:\Projects\VTB\Mapping_files\1987'
 
 old_mapping_flag: 'no'
-file_name: 'Таможенные_сервисы'
-base_system_source: 'Таможенные сервисы'
+file_name: 'МаркетингЮЛ'
+base_system_source: 'МаркетингЮЛ'
 base_system_target: '1642_19 Озеро данных'
-tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
+mapping_version: 1.0
 
-docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2214291857'
+tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
+docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1903683597'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1498
-loadType: 'Scd0AppendPartition'
-database: 'csoc'
-topic: "csoc"
+id_is: 1612_2
+loadType: 'Scd0Append'
+database: 'sgbp_fnsi_ptd'
+topic: "sgbp_fnsi_ptd"
 colsToHash: ['']
