@@ -1,6 +1,7 @@
 import re
 
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
+tmp_description = ''
 
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, alias, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
@@ -96,14 +97,14 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     properties = node.get("properties", {})
 
     if (start_table not in mapping_dict['table_name']) and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
-        # Add tech fileds
+        # Add tech fields
         for tech in tech_fields:
             append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, '', 'Техническое поле',
                            describe_table,
                            'string' if tech != 'hdp_processed_dttm' else 'timestamp',
                            ', '.join(explodedColumns))
 
-    # Add hash fileds
+    # Add hash fields
     if (tab_lvl != 0) & (explodedColumns[-1] not in mapping_dict['code_attr']):
         hash_field = explodedColumns[-1]
         array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'

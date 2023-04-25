@@ -1,5 +1,5 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1612_2\Json'
-check_dir: 'D:\Projects\VTB\Mapping_files\1987'
+file_dir: 'D:\Projects\VTB\Mapping_files\1465'
+check_dir: 'D:\Projects\VTB\Mapping_files\1465'
 
 old_mapping_flag: 'no'
 file_name: 'МаркетингЮЛ'
@@ -11,8 +11,8 @@ tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1903683597'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1612_2
+id_is: 1465
 loadType: 'Scd0Append'
-database: 'sgbp_fnsi_ptd'
-topic: "sgbp_fnsi_ptd"
+database: 'cssc'
+topic: "cssc"
 colsToHash: ['']
