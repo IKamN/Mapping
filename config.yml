@@ -2,8 +2,8 @@ file_dir: 'D:\Projects\VTB\Mapping_files\1594'
 check_dir: 'D:\Projects\VTB\Mapping_files\1594'
 
 old_mapping_flag: 'no'
-file_name: 'Система принятия кредитных решений'
-base_system_source: 'Система принятия кредитных решений'
+file_name: 'test'
+base_system_source: 'test'
 base_system_target: '1642_19 Озеро данных'
 mapping_version: 1.0
 

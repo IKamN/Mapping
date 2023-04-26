@@ -59,7 +59,7 @@ if stage == "d0":
         target_db = "test_etl_subo"
         etl_schema = "test_etl_subo"
 elif stage == "if":
-        target_db = "ift_etl_subo"
+        target_db = "ift_repl_subo_{database}"
         etl_schema ="ift_etl_subo"
 elif stage == "rr":
         target_db = "test_repl_subo_{database}"

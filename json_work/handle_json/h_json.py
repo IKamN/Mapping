@@ -2,7 +2,7 @@ import re
 
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 tmp_description = ''
-orderBy = 0
+orderBy = 0 # Add orderBy fo sorting in dataframe excel mapping
 
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, alias, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
@@ -41,12 +41,18 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
     new_table = start_table + "_" + ''.join(path[1:]) # Long name but without duplicates
 
     if tab_lvl != 0:
-        print(tab_lvl, next_node, payload_node)
         hash_field = explodedColumns[-1]
         array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'
         tmp_alias = array_field.replace('array', 'hash').lower()
         # parent_table = '_'.join(start_table.split('_')[:-1])
         parent_table = '_'.join(new_table.split('_')[:-1])
+
+        # # Add tech fields
+        # for tech in tech_fields:
+        #     append_to_dict(next_node, mapping_dict, payload_node, tab_lvl, new_table, tech, '', 'Техническое поле',
+        #                    new_describe_table,
+        #                    'string' if tech != 'hdp_processed_dttm' else 'timestamp',
+        #                    ', '.join(explodedColumns))
 
         # Add in daughter
         append_to_dict(next_node, mapping_dict, payload_node, tab_lvl, new_table, array_field, tmp_alias,
@@ -64,17 +70,17 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
 
 
 def check_ref(value, path, key, describe_attr, description, explodedColumns, alias, flag_alias=None):
-        next_node = value["$ref"].split('/')[-1]
-        new_alias = ['']
-        if flag_alias is not None:
-            new_ref = ''.join(next_node)
-            new_alias = alias + [next_node]
-        else:
-            new_alias = alias + [key] if alias != [''] else [key]
-        new_path = path + [key]
-        explodedPath = handle_path(explodedColumns, new_path)
-        new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
-        return [next_node, explodedPath, new_describe_attr, new_alias]
+    next_node = value["$ref"].split('/')[-1]
+    new_alias = ['']
+    if flag_alias is not None:
+        new_ref = ''.join(next_node)
+        new_alias = alias + [next_node]
+    else:
+        new_alias = alias + [key] if alias != [''] else [key]
+    new_path = path + [key]
+    explodedPath = handle_path(explodedColumns, new_path)
+    new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
+    return [next_node, explodedPath, new_describe_attr, new_alias]
 
 
 def shorten_string(start_table):
@@ -123,13 +129,23 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     node = definitions.get(node_name)
     properties = node.get("properties", {})
 
-    if (start_table not in mapping_dict['table_name']) and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
-        # Add tech fields
+    # Add tech fields
+    first_condition = ('Техническое поле' not in mapping_dict['describe_attr']) and (start_table in mapping_dict['table_name'])
+    second_condition = start_table not in mapping_dict['table_name']
+    if first_condition or second_condition:
         for tech in tech_fields:
             append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, '', 'Техническое поле',
                            describe_table,
                            'string' if tech != 'hdp_processed_dttm' else 'timestamp',
                            ', '.join(explodedColumns))
+
+    # if (start_table not in mapping_dict['table_name']) and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
+    #     # Add tech fields
+    #     for tech in tech_fields:
+    #         append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, '', 'Техническое поле',
+    #                        describe_table,
+    #                        'string' if tech != 'hdp_processed_dttm' else 'timestamp',
+    #                        ', '.join(explodedColumns))
 
     # Add hash fields
     # if (tab_lvl != 0) & (explodedColumns[-1] not in mapping_dict['code_attr']):
