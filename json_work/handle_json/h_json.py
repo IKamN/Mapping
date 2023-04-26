@@ -2,6 +2,7 @@ import re
 
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 tmp_description = ''
+orderBy = 0
 
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, alias, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
@@ -17,6 +18,11 @@ def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_a
     mapping_dict['filter_condition'] += [node_name]
     mapping_dict['old_map'] += [code_attr + '_' + old_map]
 
+    # For sorting in excel file
+    global orderBy
+    mapping_dict['orderBy'] += [orderBy]
+    orderBy += 1
+
 
 def handle_path(explodedColumns, new_path) -> list():
     handle_path = []
@@ -26,15 +32,36 @@ def handle_path(explodedColumns, new_path) -> list():
     return handle_path
 
 def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, value, describe_attr, description, definitions, start_table, describe_table, explodedColumns, alias):
+
     tab_lvl += 1
     new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
     # new_table = start_table + "_" + key #Short name but with duplicates
     new_describe_table = [definitions.get(next_node)[f'{description}']] if f'{description}' in definitions.get(next_node) else describe_table
     explodedColumns.append('.'.join(path))
     new_table = start_table + "_" + ''.join(path[1:]) # Long name but without duplicates
+
+    if tab_lvl != 0:
+        print(tab_lvl, next_node, payload_node)
+        hash_field = explodedColumns[-1]
+        array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'
+        tmp_alias = array_field.replace('array', 'hash').lower()
+        # parent_table = '_'.join(start_table.split('_')[:-1])
+        parent_table = '_'.join(new_table.split('_')[:-1])
+
+        # Add in daughter
+        append_to_dict(next_node, mapping_dict, payload_node, tab_lvl, new_table, array_field, tmp_alias,
+                       new_describe_attr[-1] + f' (связь с {parent_table})' if len(new_describe_attr) > 0 else f' (связь с {parent_table})',
+                       new_describe_table, 'hash', ', '.join(explodedColumns))
+
+        # Add in parent
+        append_to_dict(next_node, mapping_dict, payload_node, tab_lvl-1, parent_table, hash_field, tmp_alias,
+                       new_describe_attr[-1] + f' (связь с {new_table})' if len(new_describe_attr) > 0 else f' (связь с {new_table})',
+                       new_describe_table, 'hash', ', '.join(explodedColumns[:-1]))
+
     listing_definition(mapping_dict, definitions, description, next_node, payload_node, path, tab_lvl, new_table, new_describe_attr, new_describe_table, explodedColumns, alias)
     explodedColumns.pop()
     tab_lvl -= 1
+
 
 def check_ref(value, path, key, describe_attr, description, explodedColumns, alias, flag_alias=None):
         next_node = value["$ref"].split('/')[-1]
@@ -105,21 +132,22 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
                            ', '.join(explodedColumns))
 
     # Add hash fields
-    if (tab_lvl != 0) & (explodedColumns[-1] not in mapping_dict['code_attr']):
-        hash_field = explodedColumns[-1]
-        array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'
-        tmp_alias = array_field.replace('array', 'hash').lower()
-        parent_table = '_'.join(start_table.split('_')[:-1])
-
-        # Add in daughter
-        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, array_field, tmp_alias,
-                       describe_attr[-1] + f' (связь с {parent_table})' if len(describe_attr) > 0 else f' (связь с {parent_table})',
-                       describe_table, 'hash', ', '.join(explodedColumns))
-
-        # Add in parent
-        append_to_dict(node_name, mapping_dict, payload_node, tab_lvl-1, parent_table, hash_field, tmp_alias,
-                       describe_attr[-1] + f' (связь с {start_table})' if len(describe_attr) > 0 else f' (связь с {start_table})',
-                       describe_table, 'hash', ', '.join(explodedColumns[:-1]))
+    # if (tab_lvl != 0) & (explodedColumns[-1] not in mapping_dict['code_attr']):
+    # if (tab_lvl != 0) & (start_table not in mapping_dict['table_name']):
+    #     hash_field = explodedColumns[-1]
+    #     array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'
+    #     tmp_alias = array_field.replace('array', 'hash').lower()
+    #     parent_table = '_'.join(start_table.split('_')[:-1])
+    #
+    #     # Add in daughter
+    #     append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, array_field, tmp_alias,
+    #                    describe_attr[-1] + f' (связь с {parent_table})' if len(describe_attr) > 0 else f' (связь с {parent_table})',
+    #                    describe_table, 'hash', ', '.join(explodedColumns))
+    #
+    #     # Add in parent
+    #     append_to_dict(node_name, mapping_dict, payload_node, tab_lvl-1, parent_table, hash_field, tmp_alias,
+    #                    describe_attr[-1] + f' (связь с {start_table})' if len(describe_attr) > 0 else f' (связь с {start_table})',
+    #                    describe_table, 'hash', ', '.join(explodedColumns[:-1]))
 
 
     if not properties:
@@ -204,7 +232,8 @@ def parsing_json(definitions, nodes, database):
                     'colType': [],
                     'explodedColumns': [],
                     'filter_condition': [],
-                    'old_map':[]
+                    'old_map':[],
+                    'orderBy':[],
                     }
 
     for node in nodes:

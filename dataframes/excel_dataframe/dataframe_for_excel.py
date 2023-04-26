@@ -7,9 +7,9 @@ def save_excel(mapping_dict, xlsx_name, base_system_target,
     del mapping_dict['filter_condition']
     del mapping_dict['old_map']
     del mapping_dict['alias']
+    df = pd.DataFrame(mapping_dict).sort_values(by=['table_name', 'orderBy'])
+    df.drop(['orderBy'], axis=1)
 
-
-    df = pd.DataFrame(mapping_dict) # .sort_values(by=['table_name', 'code_attr'])
     df['code_attr'] = df['code_attr'].apply(lambda x: x.replace('array', 'hash') if '_array' in x else x)
 
     for ind in df.index:

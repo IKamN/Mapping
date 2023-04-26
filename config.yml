@@ -1,18 +1,18 @@
-file_dir: 'D:\Projects\VTB\Mapping_files\1465'
-check_dir: 'D:\Projects\VTB\Mapping_files\1465'
+file_dir: 'D:\Projects\VTB\Mapping_files\1594'
+check_dir: 'D:\Projects\VTB\Mapping_files\1594'
 
 old_mapping_flag: 'no'
-file_name: 'МаркетингЮЛ'
-base_system_source: 'МаркетингЮЛ'
+file_name: 'Система принятия кредитных решений'
+base_system_source: 'Система принятия кредитных решений'
 base_system_target: '1642_19 Озеро данных'
 mapping_version: 1.0
 
 tech_fields: ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
-docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=1903683597'
+docs: 'https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=2764832465'
 developer: 'Kamenev Ilya'
 etl_schema: 'etl_schema'
-id_is: 1465
+id_is: 1594
 loadType: 'Scd0Append'
-database: 'cssc'
-topic: "cssc"
+database: 'crcm'
+topic: 'crcm'
 colsToHash: ['']
