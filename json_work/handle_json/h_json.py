@@ -1,8 +1,11 @@
+import pprint
 import re
+from collections import defaultdict
 
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 tmp_description = ''
 orderBy = 0 # Add orderBy fo sorting in dataframe excel mapping
+test_dict = {}
 
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, alias, describe_attr, describe_table, colType, explodedColumns):
     mapping_dict['tab_lvl'] += [tab_lvl]
@@ -17,6 +20,31 @@ def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_a
     mapping_dict['explodedColumns'] += [explodedColumns]
     mapping_dict['filter_condition'] += [node_name]
     mapping_dict['old_map'] += [code_attr + '_' + old_map]
+
+    if table_name not in test_dict.keys():
+        test_dict[table_name] = {}
+
+        test_dict[table_name]['tab_lvl'] = [tab_lvl]
+        test_dict[table_name]['short_name'] = [shorten_string(table_name)] if len(table_name) > 60 else ['']
+        test_dict[table_name]['parent_table'] = ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
+        test_dict[table_name]['code_attr'] = [code_attr]
+        test_dict[table_name]['alias'] = [alias]
+        test_dict[table_name]['describe_attr'] = [describe_attr]
+        test_dict[table_name]['describe_table'] = [describe_table]
+        test_dict[table_name]['colType'] = [colType]
+        test_dict[table_name]['explodedColumns'] = [explodedColumns]
+        test_dict[table_name]['filter_condition'] = [node_name]
+    else:
+        test_dict[table_name]['tab_lvl'] += [tab_lvl]
+        test_dict[table_name]['short_name'] += [shorten_string(table_name)] if len(table_name) > 60 else ['']
+        test_dict[table_name]['parent_table'] += ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
+        test_dict[table_name]['code_attr'] += [code_attr]
+        test_dict[table_name]['alias'] += [alias]
+        test_dict[table_name]['describe_attr'] += [describe_attr]
+        test_dict[table_name]['describe_table'] += [describe_table]
+        test_dict[table_name]['colType'] += [colType]
+        test_dict[table_name]['explodedColumns'] += [explodedColumns]
+        test_dict[table_name]['filter_condition'] += [node_name]
 
     # For sorting in excel file
     global orderBy
@@ -132,7 +160,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
     # Add tech fields
     first_condition = ('Техническое поле' not in mapping_dict['describe_attr']) and (start_table in mapping_dict['table_name'])
     second_condition = start_table not in mapping_dict['table_name']
-    if first_condition or second_condition:
+    if (first_condition or second_condition):
         for tech in tech_fields:
             append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, '', 'Техническое поле',
                            describe_table,
@@ -262,4 +290,5 @@ def parsing_json(definitions, nodes, database):
         listing_definition(mapping_dict, definitions, description, node, node, start_path, tab_lvl, start_table, [], [describe_table], start_explodedColumns, [''])
 
     # print({key:len(values) for key, values in mapping_dict.items()})
+    pprint.pprint(test_dict)
     return mapping_dict
