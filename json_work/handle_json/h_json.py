@@ -1,10 +1,9 @@
 import pprint
 import re
-from collections import defaultdict
 
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
 tmp_description = ''
-orderBy = 0 # Add orderBy fo sorting in dataframe excel mapping
+orderBy = 0 # Add orderBy for sorting in dataframe excel mapping
 test_dict = {}
 
 def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_attr, alias, describe_attr, describe_table, colType, explodedColumns):
@@ -19,32 +18,20 @@ def append_to_dict(old_map, mapping_dict, node_name, tab_lvl, table_name, code_a
     mapping_dict['colType'] += [colType]
     mapping_dict['explodedColumns'] += [explodedColumns]
     mapping_dict['filter_condition'] += [node_name]
-    mapping_dict['old_map'] += [code_attr + '_' + old_map]
 
     if table_name not in test_dict.keys():
         test_dict[table_name] = {}
-
-        test_dict[table_name]['tab_lvl'] = [tab_lvl]
-        test_dict[table_name]['short_name'] = [shorten_string(table_name)] if len(table_name) > 60 else ['']
-        test_dict[table_name]['parent_table'] = ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
-        test_dict[table_name]['code_attr'] = [code_attr]
-        test_dict[table_name]['alias'] = [alias]
-        test_dict[table_name]['describe_attr'] = [describe_attr]
-        test_dict[table_name]['describe_table'] = [describe_table]
-        test_dict[table_name]['colType'] = [colType]
+        test_dict[table_name]['tab_lvl'] = tab_lvl
+        test_dict[table_name]['short_name'] = shorten_string(table_name) if len(table_name) > 60 else ''
+        test_dict[table_name]['parent_table'] = '_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else ''
+        test_dict[table_name]['describe_table'] = describe_table
         test_dict[table_name]['explodedColumns'] = [explodedColumns]
-        test_dict[table_name]['filter_condition'] = [node_name]
+        test_dict[table_name]['preFilterCondition'] = node_name
+        test_dict[table_name]['postFilterCondition'] = node_name
+        test_dict[table_name]['incrementField'] = 'hdp_processed_dttm'
+        test_dict[table_name]['parsedColumns'] = [{'name': code_attr, 'colType': colType, 'alias': alias, 'describe_name': describe_attr}]
     else:
-        test_dict[table_name]['tab_lvl'] += [tab_lvl]
-        test_dict[table_name]['short_name'] += [shorten_string(table_name)] if len(table_name) > 60 else ['']
-        test_dict[table_name]['parent_table'] += ['_'.join(table_name.split('_')[:-1]) if tab_lvl > 0 else '']
-        test_dict[table_name]['code_attr'] += [code_attr]
-        test_dict[table_name]['alias'] += [alias]
-        test_dict[table_name]['describe_attr'] += [describe_attr]
-        test_dict[table_name]['describe_table'] += [describe_table]
-        test_dict[table_name]['colType'] += [colType]
-        test_dict[table_name]['explodedColumns'] += [explodedColumns]
-        test_dict[table_name]['filter_condition'] += [node_name]
+        test_dict[table_name]['parsedColumns'] += [{'name': code_attr, 'colType': colType, 'alias': alias, 'describe_name': describe_attr}]
 
     # For sorting in excel file
     global orderBy
@@ -63,7 +50,6 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
 
     tab_lvl += 1
     new_describe_attr = describe_attr + [value[f'{description}']] if f'{description}' in value else describe_attr
-    # new_table = start_table + "_" + key #Short name but with duplicates
     new_describe_table = [definitions.get(next_node)[f'{description}']] if f'{description}' in definitions.get(next_node) else describe_table
     explodedColumns.append('.'.join(path))
     new_table = start_table + "_" + ''.join(path[1:]) # Long name but without duplicates
@@ -72,7 +58,6 @@ def repeat_action(mapping_dict, tab_lvl, next_node, payload_node, path, key, val
         hash_field = explodedColumns[-1]
         array_field = ''.join(explodedColumns[-1].split('.')[1:]) + '_array'
         tmp_alias = array_field.replace('array', 'hash').lower()
-        # parent_table = '_'.join(start_table.split('_')[:-1])
         parent_table = '_'.join(new_table.split('_')[:-1])
 
         # # Add tech fields
@@ -165,7 +150,7 @@ def listing_definition(mapping_dict, definitions, description, node_name, payloa
             append_to_dict(node_name, mapping_dict, payload_node, tab_lvl, start_table, tech, '', 'Техническое поле',
                            describe_table,
                            'string' if tech != 'hdp_processed_dttm' else 'timestamp',
-                           ', '.join(explodedColumns))
+                           ','.join(explodedColumns))
 
     # if (start_table not in mapping_dict['table_name']) and (', '.join(explodedColumns) not in mapping_dict['explodedColumns']):
     #     # Add tech fields
@@ -276,7 +261,6 @@ def parsing_json(definitions, nodes, database):
                     'colType': [],
                     'explodedColumns': [],
                     'filter_condition': [],
-                    'old_map':[],
                     'orderBy':[],
                     }
 

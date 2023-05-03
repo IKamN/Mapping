@@ -9,8 +9,8 @@ def prepare_df(mapping_dict, meta_class,
                            'colType': mapping_dict['colType'],
                            'explodedColumns': mapping_dict['explodedColumns'],
                            'meta_class': meta_class,
-                           'filter_condition': mapping_dict['filter_condition'],
-                           'old_map':mapping_dict['old_map']})
+                           'filter_condition': mapping_dict['filter_condition']
+                           })
 
     # prepare dataframe
     df_dag.drop(df_dag[df_dag['code_attr'].str.lower() == 'hdp_processed_dttm'].index, inplace=True)

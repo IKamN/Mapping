@@ -28,9 +28,9 @@ def read_json(params):
             flows += dfd.prepare_df(mapping_dict, meta_class, params['tech_fields'], params['loadType'], params['colsToHash'], params['topic'], params['etl_schema'], params['file_dir'], os.path.basename(json_file) if params['old_mapping_flag'].lower() == 'yes' else None)
 
             # save excel mapping
-            replace_version = json_file.split('_')[-1][2:-5] if len(json_file.split('_')[-1][2:-5]) > 0 else '1.0'
-            xlsx_name = os.path.join(os.path.dirname(json_file), f'S2T_mapping_{params["file_name"]}_' + os.path.basename(json_file).replace('json', 'xlsx')).replace(replace_version, str(params['mapping_version']))
-            dfe.save_excel(mapping_dict, xlsx_name, params['base_system_target'], params['base_system_source'], params['id_is'], params['database'])
+            # replace_version = json_file.split('_')[-1][2:-5] if len(json_file.split('_')[-1][2:-5]) > 0 else '1.0'
+            # xlsx_name = os.path.join(os.path.dirname(json_file), f'S2T_mapping_{params["file_name"]}_' + os.path.basename(json_file).replace('json', 'xlsx')).replace(replace_version, str(params['mapping_version']))
+            # dfe.save_excel(mapping_dict, xlsx_name, params['base_system_target'], params['base_system_source'], params['id_is'], params['database'])
 
     return flows
 
