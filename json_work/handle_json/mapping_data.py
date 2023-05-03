@@ -19,6 +19,7 @@ class Payload:
         self.path = 'payload'
         self.tab_lvl = 0
         self.table_name = f'{self.database}' + self.node
+        self.describe_attr = ''
 
         try:
             self.describe_table = self.definitions[self.node][self.description_code]
@@ -34,6 +35,28 @@ class Payload:
             return node['properties']
         except:
             return {}
+
+    def handle_path(self, explodedColumns, new_path) -> list():
+        handle_path = []
+        for i in range(0, len(new_path)):
+            if new_path[i] == explodedColumns[-1].split('.')[-1]:
+                handle_path = new_path[i:]
+        return handle_path
+
+    def check_refs(self, key, value, flag_alias=None):
+        next_node = value["$ref"].split('/')[-1]
+        if flag_alias is not None:
+            new_alias = self.alias + next_node
+        else:
+            new_alias = self.alias + key if self.alias != '' else key
+        new_path = self.path + [key]
+        explodedPath = self.handle_path(self.explodedColumns, new_path)
+        new_describe_attr = self.describe_attr + value[f'{self.description}'] if f'{self.description}' in value else self.describe_attr
+
+        self.node = next_node
+        self.path = explodedPath
+        self.describe_attr = new_describe_attr
+        self.alias = new_alias
 
 
 class Parsed_rows:
