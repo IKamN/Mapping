@@ -1,0 +1,218 @@
+cssc_CustomsCardProduct  ->  {
+  'tab_lvl': 0,
+  'short_table_name': '',
+  'parent_table': '',
+  'describe_table': 'Таможенная карта',
+  'explodedColumns': [
+    'payload'
+  ],
+  'preFilterCondition': 'CustomsCardProduct',
+  'postFilterCondition': 'CustomsCardProduct',
+  'incrementField': 'hdp_processed_dttm',
+  'parsedColumns': [
+    {
+      'name': 'changeid',
+      'colType': 'string',
+      'alias': '',
+      'describe_name': 'Техническое поле'
+    },
+    {
+      'name': 'changetype',
+      'colType': 'string',
+      'alias': '',
+      'describe_name': 'Техническое поле'
+    },
+    {
+      'name': 'changetimestamp',
+      'colType': 'string',
+      'alias': '',
+      'describe_name': 'Техническое поле'
+    },
+    {
+      'name': 'hdp_processed_dttm',
+      'colType': 'timestamp',
+      'alias': '',
+      'describe_name': 'Техническое поле'
+    },
+    {
+      'name': 'payload_CardPaymentSystem_Dictionary_Id',
+      'colType': 'string',
+      'alias': 'CardPaymentSystemDictionaryid',
+      'describe_name': 'Идентификатор справочника'
+    },
+    {
+      'name': 'payload_CardPaymentSystem_Dictionary_System',
+      'colType': 'string',
+      'alias': 'cardpaymentsystemdictionarysystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_CardPaymentSystem_Key',
+      'colType': 'string',
+      'alias': 'CardPaymentSystemkey',
+      'describe_name': 'Бизнес ключ записи в справочнике'
+    },
+    {
+      'name': 'payload_CardPaymentSystem_KeyName',
+      'colType': 'string',
+      'alias': 'CardPaymentSystemkeyname',
+      'describe_name': 'Название ключа'
+    },
+    {
+      'name': 'payload_CardRateTariff_Dictionary_Id',
+      'colType': 'string',
+      'alias': 'CardRateTariffDictionaryid',
+      'describe_name': 'Идентификатор справочника'
+    },
+    {
+      'name': 'payload_CardRateTariff_Dictionary_System',
+      'colType': 'string',
+      'alias': 'cardratetariffdictionarysystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_CardRateTariff_Key',
+      'colType': 'string',
+      'alias': 'CardRateTariffkey',
+      'describe_name': 'Бизнес ключ записи в справочнике'
+    },
+    {
+      'name': 'payload_CardRateTariff_KeyName',
+      'colType': 'string',
+      'alias': 'CardRateTariffkeyname',
+      'describe_name': 'Название ключа'
+    },
+    {
+      'name': 'payload.Cards',
+      'colType': 'hash',
+      'alias': 'cards_hash',
+      'describe_name': 'т (связь с cssc_CustomsCardProduct_Cards)'
+    },
+    {
+      'name': 'payload_Signer_Id_Id',
+      'colType': 'string',
+      'alias': 'SignerIdid',
+      'describe_name': 'Идентификатор'
+    },
+    {
+      'name': 'payload_Signer_Id_System',
+      'colType': 'string',
+      'alias': 'signeridsystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_Signer_Id_SubSystem',
+      'colType': 'string',
+      'alias': 'signeridsubsystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_Signer_Id_Version',
+      'colType': 'number',
+      'alias': 'SignerIdversion',
+      'describe_name': 'Версия'
+    },
+    {
+      'name': 'payload_Signer_Id_UpdateTime',
+      'colType': 'string',
+      'alias': 'SignerIdupdatetime',
+      'describe_name': 'Время обновления'
+    },
+    {
+      'name': 'payload_Signer_Id_CreateTime',
+      'colType': 'string',
+      'alias': 'SignerIdcreatetime',
+      'describe_name': 'Время создания'
+    },
+    {
+      'name': 'payload_Type',
+      'colType': 'string',
+      'alias': 'type',
+      'describe_name': 'Виды томежнных сервисов'
+    },
+    {
+      'name': 'payload_ProductName',
+      'colType': 'string',
+      'alias': 'productname',
+      'describe_name': 'Наименование продукта'
+    },
+    {
+      'name': 'payload.Participants',
+      'colType': 'hash',
+      'alias': 'participants_hash',
+      'describe_name': 'е (связь с cssc_CustomsCardProduct_Participants)'
+    },
+    {
+      'name': 'payload_ProductCatalogueRef_Id_Id',
+      'colType': 'string',
+      'alias': 'ProductCatalogueRefIdid',
+      'describe_name': 'Идентификатор'
+    },
+    {
+      'name': 'payload_ProductCatalogueRef_Id_System',
+      'colType': 'string',
+      'alias': 'productcataloguerefidsystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_ProductCatalogueRef_Id_SubSystem',
+      'colType': 'string',
+      'alias': 'productcataloguerefidsubsystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_ProductCatalogueRef_Id_Version',
+      'colType': 'number',
+      'alias': 'ProductCatalogueRefIdversion',
+      'describe_name': 'Версия'
+    },
+    {
+      'name': 'payload_ProductCatalogueRef_Id_UpdateTime',
+      'colType': 'string',
+      'alias': 'ProductCatalogueRefIdupdatetime',
+      'describe_name': 'Время обновления'
+    },
+    {
+      'name': 'payload_ProductCatalogueRef_Id_CreateTime',
+      'colType': 'string',
+      'alias': 'ProductCatalogueRefIdcreatetime',
+      'describe_name': 'Время создания'
+    },
+    {
+      'name': 'payload_Id_Id',
+      'colType': 'string',
+      'alias': 'Idid',
+      'describe_name': 'Идентификатор'
+    },
+    {
+      'name': 'payload_Id_System',
+      'colType': 'string',
+      'alias': 'idsystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_Id_SubSystem',
+      'colType': 'string',
+      'alias': 'idsubsystem',
+      'describe_name': ''
+    },
+    {
+      'name': 'payload_Id_Version',
+      'colType': 'number',
+      'alias': 'Idversion',
+      'describe_name': 'Версия'
+    },
+    {
+      'name': 'payload_Id_UpdateTime',
+      'colType': 'string',
+      'alias': 'Idupdatetime',
+      'describe_name': 'Время обновления'
+    },
+    {
+      'name': 'payload_Id_CreateTime',
+      'colType': 'string',
+      'alias': 'Idcreatetime',
+      'describe_name': 'Время создания'
+    }
+  ]
+}

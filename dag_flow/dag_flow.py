@@ -3,7 +3,7 @@ class Flow:
         self.json_data = json_data
         self.loadType = loadType.lower()
         self.topic = topic.lower()
-        self.colsToHash = colsToHash.lower()
+        self.colsToHash = colsToHash
 
     def define_target_flow(self, table_name:str) -> dict:
         target = {}
@@ -25,12 +25,13 @@ class Flow:
 
     def create_flow(self) -> list:
         flows = []
-        for key, values in self.json_data.iterrows():
+        for key, values in self.json_data.items():
+            # print(key, ' -> ', values)
             table_name = key
-            parsedColumns = self.json_data['parsedColumns']
-            explodedColumns = self.json_data['explodedColumns']
-            preFilterCondition = self.json_data['preFilterCondition']
-            postFilterCondition = self.json_data['postFilterCondition']
+            parsedColumns = values['parsedColumns']
+            explodedColumns = values['explodedColumns']
+            preFilterCondition = values['preFilterCondition']
+            postFilterCondition = values['postFilterCondition']
             target = self.define_target_flow(table_name)
 
             flows.append(
@@ -50,4 +51,4 @@ class Flow:
                     'addInfo': {'orderField': 'changeTimestamp'}
                 })
 
-            return flows
+        return flows

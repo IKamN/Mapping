@@ -8,6 +8,7 @@ def read_json(params):
     from json_work.handle_json import h_json
     from dataframes.excel_dataframe import dataframe_for_excel as dfe
     from dataframes.dag_dataframe import dataframe_for_dag as dfd
+    from dag_flow.dag_flow import Flow
 
     flows = []
     for filename in os.listdir(params['file_dir']):
@@ -19,13 +20,18 @@ def read_json(params):
             definitions = inf[0]
             meta_class = inf[1]
             nodes = inf[2]
+            tech_fields = params['tech_fields']
+            loadType = params['loadType']
+            colsToHash = params['colsToHash']
+            topic = params['topic']
+            file_dir = params['file_dir']
 
             # parsing json, return dict with data
-            mapping_dict = h_json.parsing_json(definitions, nodes, params['database'])
+            json_data = h_json.parsing_json(definitions, nodes, params['database'])
 
 
-            # dfd.prepare_df() return flows for dag
-            flows += dfd.prepare_df(mapping_dict, meta_class, params['tech_fields'], params['loadType'], params['colsToHash'], params['topic'], params['etl_schema'], params['file_dir'], os.path.basename(json_file) if params['old_mapping_flag'].lower() == 'yes' else None)
+            # Return flows list
+            flows += Flow(json_data, loadType=loadType, topic=topic, colsToHash=colsToHash).create_flow()
 
             # save excel mapping
             # replace_version = json_file.split('_')[-1][2:-5] if len(json_file.split('_')[-1][2:-5]) > 0 else '1.0'
