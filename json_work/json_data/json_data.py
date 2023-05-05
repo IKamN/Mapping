@@ -1,4 +1,52 @@
-class Payload:
+from json_work.open_json.json_schema import Extract
+from typing import Optional
+
+class Flow:
+    def __init__(self):
+        pass
+
+class Properties:
+    def __init__(self):
+        pass
+
+class Node:
+    def __init__(self, node_attr:dict):
+        self.node_attr = node_attr
+
+    def get_attr(self):
+        for key, value in self.node_attr.items():
+            if isinstance(value, dict):
+
+
+            #      title:Optional[str] = None,
+            #      description:Optional[str] = None,
+            #      type:Optional[str] = None,
+            #      properties:Optional[Properties] = None,
+            #      required:Optional[list] = None,
+            #      enum:Optional[list] = None):
+            # self.title = title
+            # self.description = description
+            # self.type = type
+            # self.properties = properties
+            # self.required = required
+            # self.enum = enum
+
+class Json_data(Extract):
+
+    def iterate_refs(self):
+        payload_refs = self.open_json()['payload']
+        definitions_json = self.open_json()['defintions']
+
+        def listing_definitions(definitions_json, ref):
+            node = Node(definitions_json[ref])
+
+        for ref in payload_refs:
+            listing_definitions(definitions_json, ref)
+
+
+
+
+class Json_data:
     def __init__(self,
                  definitions:dict,
                  node:str,
@@ -99,43 +147,3 @@ class Payload:
 
         self.explodedColumns = ', '.join(self.explodedColumns)
 
-
-
-
-
-
-
-
-
-
-# class Parsed_rows:
-#     def __init__(self,
-#                  payload_node:str,
-#                  tab_lvl:int,
-#                  table_name:str,
-#                  short_table_name:str,
-#                  parent_table:str,
-#                  describe_table:str,
-#                  explodedColumns:str,
-#                  preFilterCondition:str,
-#                  postFilterCondition:str,
-#                  incrementField:str,
-#                  code_attr:str,
-#                  colType:str,
-#                  alias:str):
-#         self.payload_node = payload_node
-#         self.tab_lvl = tab_lvl
-#         self.table_name = table_name
-#         self.short_table_name = short_table_name
-#         self.parent_table = parent_table
-#         self.describe_table = describe_table
-#         self.explodedColumns = explodedColumns
-#         self.preFilterCondition = preFilterCondition
-#         self.postFilterCondition = postFilterCondition
-#         self.code_attr = code_attr
-#         self.colType = colType
-#         self.alias = alias
-#         self.incrementField = incrementField
-#
-#
-#

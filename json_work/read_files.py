@@ -1,3 +1,6 @@
+from open_json.json_schema import Extract
+from json_data.json_data import Json_data
+
 def read_json(params):
     """
     :param params: user params from config
@@ -16,17 +19,22 @@ def read_json(params):
             json_file = os.path.join(params['file_dir'], filename)
 
             # handle json, return (definitions, meta_class, nodes)
+            json_schema = Extract(json_file).open_json()
+
             inf = extract.handle_json(json_file)
             definitions = inf[0]
             meta_class = inf[1]
             nodes = inf[2]
+
             tech_fields = params['tech_fields']
             loadType = params['loadType']
             colsToHash = params['colsToHash']
+
             topic = params['topic']
             file_dir = params['file_dir']
 
             # parsing json, return dict with data
+            json_data = Json_data()
             json_data = h_json.parsing_json(definitions, nodes, params['database'])
 
 

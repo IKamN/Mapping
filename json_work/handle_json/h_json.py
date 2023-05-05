@@ -1,6 +1,6 @@
 import pprint
 import re
-from json_work.handle_json.mapping_data import Payload
+from json_work.json_data.json_data import Payload
 # from json_work.handle_json.mapping_data import Parsed_rows
 
 tech_fields = ['changeid', 'changetype', 'changetimestamp', 'hdp_processed_dttm']
