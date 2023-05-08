@@ -1,21 +1,57 @@
 from json_work.open_json.json_schema import Extract
 from typing import Optional
 
+
+class Node:
+    def __init__(self, node_attr:dict):
+        for key, value in node_attr.items():
+            setattr(self, key, value)
+
+        if hasattr(self, "properties"):
+            properties = Properties(self.properties)
+        else:
+            pass
+    # def get_attr(self):
+    #     for key, value in self.node_attr.items():
+    #         if isinstance(value, dict):
+class Properties:
+    def __init__(self, properties_dict:dict):
+        for key, value in properties_dict.items():
+            setattr(self, key, value)
+
+
+
+
+class Json_data(Extract):
+    def iterate_refs(self):
+        payload_refs = self.open_json()['payload']
+        definitions_json = self.open_json()['defintions']
+        meta_class = self.open_json()['meta']
+
+        def listing_definitions(definitions_json, ref):
+            node = Node(definitions_json[ref])
+            properties = node.get('properties', {})
+
+            # Add technical fields
+            # Check if not properties
+
+            for key, value in properties.items():
+                if isinstance(value, dict):
+                    if refs:
+                        listing_definitions(definitions_json, ref)
+                    else:
+                        # Append values to list with Flow object
+
+        for ref in payload_refs:
+            listing_definitions(definitions_json, ref)
+
 class Flow:
     def __init__(self):
         pass
 
-class Properties:
-    def __init__(self):
-        pass
 
-class Node:
-    def __init__(self, node_attr:dict):
-        self.node_attr = node_attr
 
-    def get_attr(self):
-        for key, value in self.node_attr.items():
-            if isinstance(value, dict):
+
 
 
             #      title:Optional[str] = None,
@@ -30,18 +66,6 @@ class Node:
             # self.properties = properties
             # self.required = required
             # self.enum = enum
-
-class Json_data(Extract):
-
-    def iterate_refs(self):
-        payload_refs = self.open_json()['payload']
-        definitions_json = self.open_json()['defintions']
-
-        def listing_definitions(definitions_json, ref):
-            node = Node(definitions_json[ref])
-
-        for ref in payload_refs:
-            listing_definitions(definitions_json, ref)
 
 
 
