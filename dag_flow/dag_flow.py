@@ -1,5 +1,10 @@
+import typing
+
+if typing.TYPE_CHECKING:
+    from json_work.transform.transform import FlowProcessing
+
 class Flow:
-    def __init__(self, json_data:dict, loadType:str, topic:str, colsToHash:str=''):
+    def __init__(self, json_data, loadType:str, topic:str, colsToHash:str=''):
         self.json_data = json_data
         self.loadType = loadType.lower()
         self.topic = topic.lower()
@@ -25,7 +30,7 @@ class Flow:
 
     def create_flow(self) -> list:
         flows = []
-        for key, values in self.json_data.items():
+        for key, values in self.json_data.flow.items():
             # print(key, ' -> ', values)
             table_name = key
             parsedColumns = values['parsedColumns']
