@@ -27,7 +27,7 @@ class Transform(Extract):
                                 listing_definitions(ref, table, new_path, explodedColumns)
                     else:
                         flow.append_(new_path, table, explodedColumns, attr_key.type, node)
-                    path = flow.downgrade_path(path, key)
+                    # path = flow.downgrade_path(new_path, key)
             else:
                 flow.append_(path, table, explodedColumns, "string", node)
 
@@ -91,41 +91,47 @@ class FlowProcessing:
         self.flow: dict = {}
         self.tab_lvl = 0
 
-    def prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str, flag:str=None) -> list:
+    def prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str) -> list:
         import re
-        name = path
-        alias = name.lower() if len(name.split(".")) == 1 else "_".join(name.split(".")[1:]).lower()
-        parent_table = re.sub(r"_\w+$", "", table_name)
-        if flag == "new":
-            if colType > 0:
-                pass
-            return [
+        alias = path.lower() if len(path.split(".")) == 1 else "_".join(path.split(".")[1:]).lower()
+
+        if not self.flow[table_name]["parsedColumns"]:
+            self.flow[table_name]["parsedColumns"] += [
                 {'name': 'changeid', 'colType': 'string'},
                 {'name': 'changetype', 'colType': 'string'},
-                {'name': 'changetimestamp', 'colType': 'string'},
-                {"name": path, "colType": colType, "alias": alias}
+                {'name': 'changetimestamp', 'colType': 'string'}
             ]
-        else:
-            return [{"name": path, "colType": colType, "alias": alias}]
+            if self.tab_lvl > 0:
+                parent_table = re.sub(r"_\w+$", "", table_name)
+                parent_path = ".".join(explodedColumns[-1].split(".")[:-1])
+                parent_alias = parent_path.lower() + "_hash" if len(parent_path.split(".")) == 1 else "_".join(
+                    parent_path.split(".")[1:]).lower() + "_hash"
+                array_path = explodedColumns[-1].split(".")[-1] + "_array"
+                alias_hash = array_path.replace("array", "hash")
 
+                self.flow[table_name]["parsedColumns"] += [
+                    {"name": array_path, "colType": "hash", "alias": alias_hash}
+                ]
+                self.flow[parent_table]["parsedColumns"] += [
+                    {"name": parent_path, "colType": "hash", "alias": parent_alias}
+                ]
+            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias}]
+        else:
+            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias}]
 
     def append_(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node) -> None:
         if table_name not in self.flow:
-            parsedColumns = self.prepare_columns(path, explodedColumns, table_name, colType, "new")
             self.flow[table_name] = {
                 "describe_table": node.alias,
                 "explodedColumns": explodedColumns,
                 "tab_lvl": self.tab_lvl,
+                "parsedColumns": [],
                 "parent_table": '',
-                "parsedColumns": parsedColumns,
                 "preFilterCondition": f"value like '%Class_:_{self.meta_class}%'",
                 "postFilterCondition": f"meta.Class = '{self.meta_class}'",
                 "short_table_name": ''
             }
-        else:
-            parsedColumns = self.prepare_columns(path, explodedColumns, table_name, colType)
-            self.flow[table_name]["parsedColumns"] += parsedColumns
-
+        self.prepare_columns(path, explodedColumns, table_name, colType)
 
     def update_path(self, path:str, key:str) -> str:
         return path + f".{key}"
@@ -140,7 +146,7 @@ class FlowProcessing:
 
         if len(explodedColumns) == 1:
             new_explodedColumns.append(path)
-            table = table + "_" + path.split(".")[-1]
+            table = table + "_" + "".join(new_explodedColumns[-1].split(".")[1:])
         else:
             prefix = new_explodedColumns[-1].split(".")[-1]
             postfix = path.split(".")[1:]
