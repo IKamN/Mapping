@@ -1,20 +1,16 @@
-import typing
-
-if typing.TYPE_CHECKING:
-    from json_work.transform.transform import FlowProcessing
 
 class Flow:
     def __init__(self, json_data, loadType:str, topic:str, colsToHash:str=''):
         self.json_data = json_data
-        self.loadType = loadType.lower()
+        self.loadType = loadType
         self.topic = topic.lower()
         self.colsToHash = colsToHash
 
     def define_target_flow(self, table_name:str) -> dict:
         target = {}
-        if self.loadType == 'scd0append':
+        if self.loadType.lower() == 'scd0append':
             target = {'table': table_name}
-        elif self.loadType == 'scd0appendpartition':
+        elif self.loadType.lower() == 'scd0appendpartition':
             target = {
                 'table': table_name,
                 'aggregationField': 'dte',
@@ -34,6 +30,8 @@ class Flow:
             # print(key, ' -> ', values)
             table_name = key
             parsedColumns = values['parsedColumns']
+            for i in parsedColumns:
+                del i["description"]
             explodedColumns = values['explodedColumns']
             preFilterCondition = values['preFilterCondition']
             postFilterCondition = values['postFilterCondition']

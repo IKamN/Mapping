@@ -8,7 +8,7 @@ class Transform(Extract):
         meta_class = json_file['meta']
         flow = FlowProcessing(meta_class)
 
-        def listing_definitions(ref, table, path, explodedColumns):
+        def listing_definitions(ref, table, path, explodedColumns, describe_attr:str) -> None:
             node = Node(definitions[ref])
 
             if hasattr(node, 'properties'):
@@ -22,21 +22,22 @@ class Transform(Extract):
                                 array_table = updated["table"]
                                 array_explodedColumns = updated["explodedColumns"]
                                 array_path = updated["path"]
-                                listing_definitions(ref, array_table, array_path, array_explodedColumns)
+                                listing_definitions(ref, array_table, array_path, array_explodedColumns, attr_key.alias)
                                 flow.tab_lvl = flow.tab_lvl - 1
+                                # flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias)
                             else:
-                                listing_definitions(ref, table, new_path, explodedColumns)
+                                listing_definitions(ref, table, new_path, explodedColumns, attr_key.alias)
                     else:
-                        flow.append_(new_path, table, explodedColumns, attr_key.type, node)
-                    # path = flow.downgrade_path(new_path, key)
+                        flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias)
             else:
-                flow.append_(path, table, explodedColumns, "string", node)
+                flow.append_(path, table, explodedColumns, "string", node, describe_attr)
 
         for start_table in payload_refs:
             start_path = "payload"
             ref = start_table
             explodedColumns = ["payload"]
-            listing_definitions(ref, start_table, start_path, explodedColumns)
+            describe_attr = ""
+            listing_definitions(ref, start_table, start_path, explodedColumns, describe_attr)
 
         return flow
 
@@ -53,9 +54,12 @@ class Attributes:
                 setattr(self, key, "bigint")
             else:
                 setattr(self, key, value)
-            self.refs = []
-        if "type" not in properties_dict:
+
+        if "type" not in self.__dict__:
             setattr(self, "type", "string")
+        if "alias" not in self.__dict__:
+            setattr(self, "alias", "")
+        self.refs = []
 
         if (hasattr(self, "type")) and (self.type == "array"):
             if 'anyOf' in self.items:
@@ -92,38 +96,40 @@ class FlowProcessing:
         self.flow: dict = {}
         self.tab_lvl = 0
 
-    def prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str) -> list:
+    def prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str, describe_attr:str) -> list:
         import re
         alias = path.lower() if len(path.split(".")) == 1 else "_".join(path.split(".")[1:]).lower()
 
         if not self.flow[table_name]["parsedColumns"]:
             self.flow[table_name]["parsedColumns"] += [
-                {'name': 'changeid', 'colType': 'string'},
-                {'name': 'changetype', 'colType': 'string'},
-                {'name': 'changetimestamp', 'colType': 'string'}
+                {'name': 'changeid', 'colType': 'string', "description": "Техническое поле"},
+                {'name': 'changetype', 'colType': 'string', "description": "Техническое поле"},
+                {'name': 'changetimestamp', 'colType': 'string', "description": "Техническое поле"}
             ]
-            if self.tab_lvl > 0:
-                # parent_table = re.sub(r"_\w+$", "", table_name)
-                # parent_table = re.match(r'(.+)_', table_name).group(1)
-                parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_"))>1 else table_name.split("_")[0]
-                # parent_path = ".".join(explodedColumns[-1].split(".")[:-1])
+
+            parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
+            if (self.tab_lvl != 0) and (parent_table in self.flow):
                 parent_path = explodedColumns[-1]
                 parent_alias = parent_path.lower() + "_hash" if len(parent_path.split(".")) == 1 else "_".join(
                     parent_path.split(".")[1:]).lower() + "_hash"
+                parent_describe = describe_attr + f" (связь с {table_name})" if len(describe_attr) > 0 else f"связь с {table_name}"
+
                 array_path = explodedColumns[-1].split(".")[-1] + "_array"
                 alias_hash = array_path.replace("array", "hash")
+                array_describe = describe_attr + f" (связь с {parent_table})" if len(describe_attr) > 0 else f"связь с {parent_table}"
+
 
                 self.flow[table_name]["parsedColumns"] += [
-                    {"name": array_path, "colType": "hash", "alias": alias_hash}
+                    {"name": array_path, "colType": "hash", "alias": alias_hash, "description": array_describe}
                 ]
                 self.flow[parent_table]["parsedColumns"] += [
-                    {"name": parent_path, "colType": "hash", "alias": parent_alias}
+                    {"name": parent_path, "colType": "hash", "alias": parent_alias, "description": parent_describe}
                 ]
-            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias}]
+            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
         else:
-            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias}]
+            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
 
-    def append_(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node) -> None:
+    def append_(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str) -> None:
         if table_name not in self.flow:
             self.flow[table_name] = {
                 "describe_table": node.alias,
@@ -135,7 +141,7 @@ class FlowProcessing:
                 "postFilterCondition": f"meta.Class = '{self.meta_class}'",
                 "short_table_name": ''
             }
-        self.prepare_columns(path, explodedColumns, table_name, colType)
+        self.prepare_columns(path, explodedColumns, table_name, colType, describe_attr)
 
 
     def update_path(self, path:str, key:str) -> str:

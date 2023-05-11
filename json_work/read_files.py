@@ -15,7 +15,6 @@ def read_json(params):
             # parsing json, return FlowProcess object
             json_data = Transform(json_file).iterate_refs()
 
-            tech_fields = params['tech_fields']
             loadType = params['loadType']
             colsToHash = params['colsToHash']
 
