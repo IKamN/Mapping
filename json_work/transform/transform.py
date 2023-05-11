@@ -1,7 +1,7 @@
 from json_work.extract.extract import Extract
 
 class Transform(Extract):
-    def iterate_refs(self):
+    def iterate_refs(self, database:str):
         json_file = self.open_json()
         payload_refs = json_file['payload']
         definitions = json_file['definitions']
@@ -11,7 +11,11 @@ class Transform(Extract):
         def listing_definitions(ref, table, path, explodedColumns, describe_attr:str) -> None:
             node = Node(definitions[ref])
 
+            # if table in payload_refs:
+            #     flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias)
+
             if hasattr(node, 'properties'):
+                node.filter()
                 for key, value in node.properties.items():
                     new_path = flow.update_path(path, key)
                     attr_key = Attributes(value)
@@ -23,8 +27,7 @@ class Transform(Extract):
                                 array_explodedColumns = updated["explodedColumns"]
                                 array_path = updated["path"]
                                 listing_definitions(ref, array_table, array_path, array_explodedColumns, attr_key.alias)
-                                flow.tab_lvl = flow.tab_lvl - 1
-                                # flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias)
+                                flow.tab_lvl -= 1
                             else:
                                 listing_definitions(ref, table, new_path, explodedColumns, attr_key.alias)
                     else:
@@ -35,6 +38,7 @@ class Transform(Extract):
         for start_table in payload_refs:
             start_path = "payload"
             ref = start_table
+            start_table = f"{database}_{start_table}"
             explodedColumns = ["payload"]
             describe_attr = ""
             listing_definitions(ref, start_table, start_path, explodedColumns, describe_attr)
@@ -55,9 +59,9 @@ class Attributes:
             else:
                 setattr(self, key, value)
 
-        if "type" not in self.__dict__:
+        if "type" not in properties_dict:
             setattr(self, "type", "string")
-        if "alias" not in self.__dict__:
+        if ("alias" not in properties_dict) and ("title" not in properties_dict):
             setattr(self, "alias", "")
         self.refs = []
 
@@ -86,8 +90,16 @@ class Node:
                 setattr(self, "alias", value)
             else:
                 setattr(self, key, value)
-        if "alias" not in node_attr:
+        if ("alias" not in node_attr) and ("title" not in node_attr):
             setattr(self, "alias", "")
+
+    def filter(self):
+        filter_properties = {k: v for k, v in self.properties.items() if 'type' in v and v['type'] == 'array'}
+        self.properties = {k: v for k, v in self.properties.items() if 'type' not in v or v['type'] != 'array'}
+        self.properties.update(filter_properties)
+
+
+
 
 class FlowProcessing:
 
@@ -102,11 +114,12 @@ class FlowProcessing:
 
         if not self.flow[table_name]["parsedColumns"]:
             self.flow[table_name]["parsedColumns"] += [
-                {'name': 'changeid', 'colType': 'string', "description": "Техническое поле"},
-                {'name': 'changetype', 'colType': 'string', "description": "Техническое поле"},
-                {'name': 'changetimestamp', 'colType': 'string', "description": "Техническое поле"}
+                {'name': 'ChangeId', 'colType': 'string', "description": "Техническое поле"},
+                {'name': 'ChangeType', 'colType': 'string', "description": "Техническое поле"},
+                {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Техническое поле"}
             ]
 
+            # Add hash fields
             parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
             if (self.tab_lvl != 0) and (parent_table in self.flow):
                 parent_path = explodedColumns[-1]
@@ -128,6 +141,7 @@ class FlowProcessing:
             self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
         else:
             self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
+
 
     def append_(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str) -> None:
         if table_name not in self.flow:

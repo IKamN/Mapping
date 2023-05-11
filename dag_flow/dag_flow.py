@@ -1,3 +1,4 @@
+import copy
 
 class Flow:
     def __init__(self, json_data, loadType:str, topic:str, colsToHash:str=''):
@@ -29,7 +30,7 @@ class Flow:
         for key, values in self.json_data.flow.items():
             # print(key, ' -> ', values)
             table_name = key
-            parsedColumns = values['parsedColumns']
+            parsedColumns = copy.deepcopy(values['parsedColumns'])
             for i in parsedColumns:
                 del i["description"]
             explodedColumns = values['explodedColumns']
