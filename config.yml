@@ -1,7 +1,7 @@
-file_dir: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel'
+file_dir: 'D:\Projects\VTB\Mapping_files\1963\test'
 
-f: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/sales'
-d: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel'
+f: 'D:\Projects\VTB\Mapping_files\1963\test'
+d: 'D:\Projects\VTB\Mapping_files\1963'
 
 old_mapping_flag: 'no'
 file_name: 'test'

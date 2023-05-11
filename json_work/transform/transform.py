@@ -10,6 +10,7 @@ class Transform(Extract):
 
         def listing_definitions(ref, table, path, explodedColumns):
             node = Node(definitions[ref])
+
             if hasattr(node, 'properties'):
                 for key, value in node.properties.items():
                     new_path = flow.update_path(path, key)
@@ -22,7 +23,7 @@ class Transform(Extract):
                                 array_explodedColumns = updated["explodedColumns"]
                                 array_path = updated["path"]
                                 listing_definitions(ref, array_table, array_path, array_explodedColumns)
-                                flow.tab_lvl -= 1
+                                flow.tab_lvl = flow.tab_lvl - 1
                             else:
                                 listing_definitions(ref, table, new_path, explodedColumns)
                     else:
@@ -102,8 +103,11 @@ class FlowProcessing:
                 {'name': 'changetimestamp', 'colType': 'string'}
             ]
             if self.tab_lvl > 0:
-                parent_table = re.sub(r"_\w+$", "", table_name)
-                parent_path = ".".join(explodedColumns[-1].split(".")[:-1])
+                # parent_table = re.sub(r"_\w+$", "", table_name)
+                # parent_table = re.match(r'(.+)_', table_name).group(1)
+                parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_"))>1 else table_name.split("_")[0]
+                # parent_path = ".".join(explodedColumns[-1].split(".")[:-1])
+                parent_path = explodedColumns[-1]
                 parent_alias = parent_path.lower() + "_hash" if len(parent_path.split(".")) == 1 else "_".join(
                     parent_path.split(".")[1:]).lower() + "_hash"
                 array_path = explodedColumns[-1].split(".")[-1] + "_array"
@@ -133,6 +137,7 @@ class FlowProcessing:
             }
         self.prepare_columns(path, explodedColumns, table_name, colType)
 
+
     def update_path(self, path:str, key:str) -> str:
         return path + f".{key}"
 
@@ -140,7 +145,7 @@ class FlowProcessing:
         return path.replace(f".{key}", "")
 
     def next_array(self, path:str, explodedColumns:list, table:str) -> dict:
-        self.tab_lvl += 1
+        self.tab_lvl = self.tab_lvl + 1
         new_explodedColumns = []
         new_explodedColumns += explodedColumns
 
