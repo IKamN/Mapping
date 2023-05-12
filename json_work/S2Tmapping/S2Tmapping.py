@@ -1,4 +1,4 @@
-def test(data:dict, base_system_source:str, database:str):
+def test(data:dict, base_system_source:str, database:str, file_name:str) -> None:
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils import get_column_letter
@@ -24,30 +24,38 @@ def test(data:dict, base_system_source:str, database:str):
     index = 1
     for table_name, table_data in data.items():
         source_table = re.sub(r'^.*?_', '', table_name)
+        parent_table = re.sub(r'^.*?_', '', table_data["parent_table"])
         schema = f"prod_repl_subo_{database}"
         for column_data in table_data['parsedColumns']:
+            tag_name = ""
+            if "array" in column_data["name"]:
+                tag_name = column_data["name"].replace("array", "hash")
+            else:
+                tag_name = ".".join(column_data["name"].split(".")[1:]) if column_data["colType"] != "hash" else ".".join(column_data["name"].split(".")[1:]) + "_hash"
+            # print(tag_name, '  ', column_data["name"])
+            tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data["colType"] != "hash" else "New_hash"
+            column_data["colType"] = "string" if column_data["colType"] == "hash" else column_data["colType"]
             if "alias" in column_data:
-                tag_name = ".".join(column_data["name"].split(".")[1:])
-                tag_json = f'{source_table.replace("_", ".")}[].{tag_name}'
-                row_data = [index, "Реплика", base_system_source, tag_json, source_table, "", table_data["describe_table"],
+                row_data = [index, "Реплика", base_system_source, tag_json, source_table, parent_table, table_data["describe_table"],
                             table_data["tab_lvl"], tag_name, column_data["description"], column_data["colType"], "", "", "", "", "", "",
                             "1642_19 Озеро данных", schema, table_name, table_data["parent_table"], table_data["describe_table"], table_data["tab_lvl"],
-                            column_data['alias'], column_data['description'], "", column_data['colType']]
+                            tag_name, column_data['description'], "", column_data['colType']]
             else:
-                row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, "",
+                row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, parent_table,
                             table_data["describe_table"], table_data["tab_lvl"], "",
-                            column_data["description"], column_data["colType"], "", "", "", "", "", "",
+                            "", column_data["colType"], "", "", "", "", "", "",
                             "1642_19 Озеро данных", schema, table_name, table_data["parent_table"],  table_data["describe_table"], table_data["tab_lvl"],
-                            column_data['name'], column_data['description'], "", column_data['colType']]
+                            column_data["name"], column_data['description'], "", column_data['colType']]
             index += 1
             ws.append(row_data)
 
     for col in ws.columns:
         max_length = 0
-        column = col[3:]
+        column = col[1:]
         for cell in column:
             if len(str(cell.value)) > max_length:
                 max_length = len(str(cell.value))
+
         adjusted_width = (max_length + 2)
         col_letter = col[0].column_letter
         ws.column_dimensions[col_letter].width = adjusted_width
@@ -94,8 +102,4 @@ def test(data:dict, base_system_source:str, database:str):
     ws['C1'].alignment = center_alignment
     ws['R1'].alignment = center_alignment
 
-
-
-
-
-    wb.save('output.xlsx')
+    wb.save(f"{file_name}.xlsx")
