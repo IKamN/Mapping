@@ -30,7 +30,8 @@ class Transform(Extract):
                     else:
                         flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias, anyOfExists)
             else:
-                flow.append_(f"{path}.{ref}", table, explodedColumns, "string", node, describe_attr, anyOfExists)
+                # flow.append_(f"{path}.{ref}", table, explodedColumns, "string", node, describe_attr, anyOfExists)
+                flow.append_(path, table, explodedColumns, "string", node, describe_attr, anyOfExists)
 
         for start_table in payload_refs:
             start_path = "payload"
@@ -69,8 +70,6 @@ class Attributes:
                 self.refs += [i['$ref'].split('/')[-1] for i in self.items['anyOf']]
             elif '$ref' in self.items:
                 self.refs.append(self.items['$ref'].split('/')[-1])
-            else:
-                self.refs.append('smthMissed..')
         elif hasattr(self, 'anyOf'):
             self.refs += [i['$ref'].split('/')[-1] for i in self.anyOf]
         elif hasattr(self, 'ref'):
@@ -122,24 +121,27 @@ class FlowProcessing:
     def __prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str, describe_attr:str, node) -> list:
         alias = path.lower() if len(path.split(".")) == 1 else "_".join(path.split(".")[1:]).lower()
         if not self.flow[table_name]["parsedColumns"]:
-            tech_parsedColumns = [
+            parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else \
+            table_name.split("_")[0]
+
+            self.flow[table_name]["parent_table"] = parent_table
+            self.flow[table_name]["parsedColumns"] += [
                 {'name': 'ChangeId', 'colType': 'string', "description": "Техническое поле"},
                 {'name': 'ChangeType', 'colType': 'string', "description": "Техническое поле"},
-                {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Техническое поле"}
-            ]
-            self.flow[table_name]["parsedColumns"] += tech_parsedColumns
+                {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Техническое поле"},
+                {'name': 'Hdp_Processed_Dttm', 'colType': 'timestamp', "description": "Техническое поле"},
+                {"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
 
             # Add hash fields
-            parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
             if self.tab_lvl != 0:
                 parent_path = explodedColumns[-1]
                 parent_alias = parent_path.lower() + "_hash" if len(parent_path.split(".")) == 1 else "_".join(
                     parent_path.split(".")[1:]).lower() + "_hash"
-                parent_describe = describe_attr + f" (связь с {table_name})" if len(describe_attr) > 0 else f"связь с {table_name}"
+                parent_describe = f"связь с {table_name}"
 
                 array_path = explodedColumns[-1].split(".")[-1] + "_array"
                 alias_hash = array_path.replace("array", "hash")
-                array_describe = describe_attr + f" (связь с {parent_table})" if len(describe_attr) > 0 else f"связь с {parent_table}"
+                array_describe = f"связь с {parent_table}"
 
 
                 self.flow[table_name]["parsedColumns"] += [
@@ -148,8 +150,7 @@ class FlowProcessing:
                 self.flow[parent_table]["parsedColumns"] += [
                     {"name": parent_path, "colType": "hash", "alias": parent_alias, "description": parent_describe}
                 ]
-            self.flow[table_name]["parent_table"] = parent_table
-            self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
+
         else:
             self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
 
@@ -181,7 +182,8 @@ class FlowProcessing:
                 tech_parsedColumns = [
                     {'name': 'ChangeId', 'colType': 'string', "description": "Техническое поле"},
                     {'name': 'ChangeType', 'colType': 'string', "description": "Техническое поле"},
-                    {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Техническое поле"}
+                    {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Техническое поле"},
+                    {'name': 'Hdp_Processed_Dttm', 'colType': 'timestamp', "description": "Техническое поле"},
                 ]
                 self.flow[parent_table]["parsedColumns"] += tech_parsedColumns
 
@@ -203,8 +205,6 @@ class FlowProcessing:
     def update_path(self, path:str, key:str) -> str:
         return path + f".{key}"
 
-    def downgrade_path(self, path:str, key:str) -> str:
-        return path.replace(f".{key}", "")
 
     def next_array(self, path:str, explodedColumns:list, table:str) -> dict:
         self.tab_lvl = self.tab_lvl + 1

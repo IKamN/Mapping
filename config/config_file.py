@@ -12,7 +12,6 @@ def read_config():
             'file_name': raw['file_name'],
             'base_system_source': raw['base_system_source'],
             'base_system_target':raw['base_system_target'],
-            'tech_fields': raw['tech_fields'],
             'docs': raw['docs'],
             'developer': raw['developer'],
             'etl_schema': raw['etl_schema'],

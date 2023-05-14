@@ -28,11 +28,15 @@ class Flow:
     def create_flow(self) -> list:
         flows = []
         for key, values in self.json_data.flow.items():
-            # print(key, ' -> ', values)
             table_name = key
             parsedColumns = copy.deepcopy(values['parsedColumns'])
             for i in parsedColumns:
                 del i["description"]
+            for i in parsedColumns:
+                if i["name"] == "Hdp_Processed_Dttm":
+                    parsedColumns.remove(i)
+
+
             explodedColumns = values['explodedColumns']
             preFilterCondition = values['preFilterCondition']
             postFilterCondition = values['postFilterCondition']
