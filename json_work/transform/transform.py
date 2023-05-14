@@ -6,16 +6,13 @@ class Transform(Extract):
         payload_refs = json_file['payload']
         definitions = json_file['definitions']
         meta_class = json_file['meta']
+        anyOfExists = len(payload_refs)
         flow = FlowProcessing(meta_class)
 
         def listing_definitions(ref, table, path, explodedColumns, describe_attr:str) -> None:
             node = Node(definitions[ref])
 
-            # if table in payload_refs:
-            #     flow.append_(path, table, explodedColumns, attr_key.type, node, attr_key.alias)
-
             if hasattr(node, 'properties'):
-                # node.filter()
                 for key, value in node.properties.items():
                     new_path = flow.update_path(path, key)
                     attr_key = Attributes(value)
@@ -31,9 +28,9 @@ class Transform(Extract):
                             else:
                                 listing_definitions(ref, table, new_path, explodedColumns, attr_key.alias)
                     else:
-                        flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias)
+                        flow.append_(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias, anyOfExists)
             else:
-                flow.append_(f"{path}.{ref}", table, explodedColumns, "string", node, describe_attr)
+                flow.append_(f"{path}.{ref}", table, explodedColumns, "string", node, describe_attr, anyOfExists)
 
         for start_table in payload_refs:
             start_path = "payload"
@@ -95,11 +92,6 @@ class Node:
         if ("alias" not in node_attr) and ("title" not in node_attr):
             setattr(self, "alias", "")
 
-    def filter(self):
-        filter_properties = {k: v for k, v in self.properties.items() if 'type' in v and v['type'] == 'array'}
-        self.properties = {k: v for k, v in self.properties.items() if 'type' not in v or v['type'] != 'array'}
-        self.properties.update(filter_properties)
-
 
 
 
@@ -110,10 +102,25 @@ class FlowProcessing:
         self.flow: dict = {}
         self.tab_lvl = 0
 
-    def prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str, describe_attr:str, node) -> list:
-        import re
-        alias = path.lower() if len(path.split(".")) == 1 else "_".join(path.split(".")[1:]).lower()
+    # def __prepare_alias(self, path:str, table_name:str) -> str:
+    #     import re
+    #     exist_alias = []
+    #     if len(self.flow[table_name]["parsedColumns"]) > 3:
+    #         exist_alias += [columns["alias"] for columns in self.flow[table_name]["parsedColumns"][4:]]
+    #     result_string = path
+    #     alias = ""
+    #     while "." in result_string:
+    #         result_string = re.sub(r'^[^.]+\.', '', result_string)
+    #         if path.replace(".", "_") in exist_alias:
+    #             alias = re.sub(r'\.([^\.]+)$', r'\g<0>\g<1>', path).replace(".", "_")
+    #             return alias
+    #         if result_string.replace(".", "_") not in exist_alias:
+    #             alias = result_string.replace(".", "_")
+    #     return alias
 
+
+    def __prepare_columns(self, path: str, explodedColumns:list, table_name:str, colType:str, describe_attr:str, node) -> list:
+        alias = path.lower() if len(path.split(".")) == 1 else "_".join(path.split(".")[1:]).lower()
         if not self.flow[table_name]["parsedColumns"]:
             tech_parsedColumns = [
                 {'name': 'ChangeId', 'colType': 'string', "description": "Техническое поле"},
@@ -147,7 +154,15 @@ class FlowProcessing:
             self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
 
 
-    def append_(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str) -> None:
+    def append_(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str, anyOfRefs:int) -> None:
+
+        if anyOfRefs == 1:
+            preFilterCondition = f"value like '%Class_:_{self.meta_class}%'"
+            postFilterCondition = f"meta.Class = '{self.meta_class}'"
+        else:
+            preFilterCondition = f"value like '%Class_:_{self.meta_class}%' and value like '%payload.Id_:_%'"
+            postFilterCondition = f"payload.Id = ''"
+
 
         if self.tab_lvl == 1:
             parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
@@ -158,8 +173,8 @@ class FlowProcessing:
                     "tab_lvl": self.tab_lvl,
                     "parsedColumns": [],
                     "parent_table": '',
-                    "preFilterCondition": f"value like '%Class_:_{self.meta_class}%'",
-                    "postFilterCondition": f"meta.Class = '{self.meta_class}'",
+                    "preFilterCondition": preFilterCondition,
+                    "postFilterCondition": postFilterCondition,
                     "short_table_name": ''
                 }
 
@@ -177,11 +192,12 @@ class FlowProcessing:
                 "tab_lvl": self.tab_lvl,
                 "parsedColumns": [],
                 "parent_table": '',
-                "preFilterCondition": f"value like '%Class_:_{self.meta_class}%'",
-                "postFilterCondition": f"meta.Class = '{self.meta_class}'",
+                "preFilterCondition": preFilterCondition,
+                "postFilterCondition": postFilterCondition,
                 "short_table_name": ''
             }
-        self.prepare_columns(path, explodedColumns, table_name, colType, describe_attr, node)
+
+        self.__prepare_columns(path, explodedColumns, table_name, colType, describe_attr, node)
 
 
     def update_path(self, path:str, key:str) -> str:

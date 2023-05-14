@@ -28,18 +28,20 @@ def test(data:dict, base_system_source:str, database:str, file_name:str) -> None
         schema = f"prod_repl_subo_{database}"
         for column_data in table_data['parsedColumns']:
             tag_name = ""
+            code_attr = ""
             if "array" in column_data["name"]:
                 tag_name = column_data["name"].replace("array", "hash")
+                code_attr = tag_name.replace(".", "_")
             else:
                 tag_name = ".".join(column_data["name"].split(".")[1:]) if column_data["colType"] != "hash" else ".".join(column_data["name"].split(".")[1:]) + "_hash"
-            # print(tag_name, '  ', column_data["name"])
+                code_attr = tag_name.replace(".", "_")
             tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data["colType"] != "hash" else "New_hash"
             column_data["colType"] = "string" if column_data["colType"] == "hash" else column_data["colType"]
             if "alias" in column_data:
                 row_data = [index, "Реплика", base_system_source, tag_json, source_table, parent_table, table_data["describe_table"],
                             table_data["tab_lvl"], tag_name, column_data["description"], column_data["colType"], "", "", "", "", "", "",
                             "1642_19 Озеро данных", schema, table_name, table_data["parent_table"], table_data["describe_table"], table_data["tab_lvl"],
-                            tag_name, column_data['description'], "", column_data['colType']]
+                            code_attr, column_data['description'], "", column_data['colType']]
             else:
                 row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, parent_table,
                             table_data["describe_table"], table_data["tab_lvl"], "",
