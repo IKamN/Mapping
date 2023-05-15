@@ -28,13 +28,14 @@ def test(data:dict, base_system_source:str, database:str, file_name:str) -> None
         schema = f"prod_repl_subo_{database}"
         for column_data in table_data['parsedColumns']:
             tag_name = ""
-            code_attr = ""
             if "array" in column_data["name"]:
                 tag_name = column_data["name"].replace("array", "hash")
-                code_attr = tag_name.replace(".", "_")
+            elif "." not in column_data["name"]:
+                tag_name = column_data["name"]
             else:
                 tag_name = ".".join(column_data["name"].split(".")[1:]) if column_data["colType"] != "hash" else ".".join(column_data["name"].split(".")[1:]) + "_hash"
-                code_attr = tag_name.replace(".", "_")
+            code_attr = tag_name.replace(".", "_")
+
             tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data["colType"] != "hash" else "New_hash"
             column_data["colType"] = "string" if column_data["colType"] == "hash" else column_data["colType"]
             if "alias" in column_data:
