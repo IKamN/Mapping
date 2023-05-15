@@ -105,83 +105,16 @@ class FlowProcessing:
         self.flow: dict = {}
         self.tab_lvl = 0
 
-    def __prepare_table(self, start_table:str) -> str:
-        import re
-        tmp = start_table.split('_')[1:]
-        prefix = start_table.split('_')[0]
-        letters = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']
-        for i in range(0, len(tmp) - 1):
-            if i == 0:
-                for l in range(len(tmp[i]) - 1, 0, -1):
-                    if re.search('[A-Z]', tmp[i][l]):
-                        for r in range(2, 7):
-                            if tmp[i][l + r] in letters:
-                                tmp[i] = tmp[i][0:l + r + 1]
-                                break
-                        break
-            else:
-                parts = re.findall('[A-Z][^A-Z]*', tmp[i])
-                if len(parts) > 1:
-                    for k in range(0, len(parts)):
-                        for l in range(0, len(parts[k])):
-                            if re.search('[A-Z]', parts[k][l]):
-                                for r in range(2, 7):
-                                    if parts[k][r] in letters:
-                                        tmp[i] = tmp[i].replace(parts[k], parts[k][0:r + 1])
-                                        break
-                                break
-                        if len(prefix + '_' + '_'.join(tmp)) > 60:
-                            continue
-                        else:
-                            break
-                else:
-                    for l in range(0, len(parts)):
-                        if re.search('[A-Z]', parts[0]):
-                            for r in range(3, 7):
-                                if tmp[i][r] in letters:
-                                    tmp[i] = tmp[i][0:r + 1]
-                                    break
-                            break
-            if len(prefix + '_' + '_'.join(tmp)) > 60:
-                continue
-            else:
-                break
-        return prefix + '_' + '_'.join(tmp)
-
-    def __prepare_alias(self, path:str, table_name:str) -> str:
-        import re
-        exist_alias = []
-        if len(self.flow[table_name]["parsedColumns"]) > 3:
-            exist_alias += [columns["alias"] for columns in self.flow[table_name]["parsedColumns"][4:]]
-
-        alias = ""
-        # result_string = path
-        # Добавить сортировку сначала самые короткие
-        # while "." in result_string:
-        #     result_string = re.sub(r'^[^.]+\.', '', result_string)
-        #     if path.replace(".", "_") in exist_alias:
-        #         alias = re.sub(r'\.([^\.]+)$', r'\g<0>\g<1>', path).replace(".", "_")
-        #         return alias
-        #     if result_string.replace(".", "_") not in exist_alias:
-        #         alias = result_string.replace(".", "_")
-        # return alias
-
-        if path.replace(".", "_") in exist_alias:
-            alias = re.sub(r'\.([^\.]+)$', r'\g<0>\g<1>', path).replace(".", "_")
-            return alias
-        else:
-            alias = path.lower() if len(path.split(".")) == 1 else "_".join(path.split(".")[1:]).lower()
-        return alias
 
     def append_hash(self, table_name:str, explodedColumns:list):
         parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
         parent_path = explodedColumns[-1]
-        parent_alias = parent_path.lower() + "_hash" if len(parent_path.split(".")) == 1 else "_".join(
-            parent_path.split(".")[1:]).lower() + "_hash"
+        parent_alias = parent_path + ".hash" if len(parent_path.split(".")) == 1 else ".".join(
+            parent_path.split(".")[1:]) + ".hash"
         parent_describe = f"связь с {table_name}"
 
         array_path = explodedColumns[-1].split(".")[-1] + "_array"
-        alias_hash = array_path.replace("array", "hash")
+        alias_hash = array_path.replace("_array", ".hash")
         array_describe = f"связь с {parent_table}"
 
 
@@ -194,10 +127,6 @@ class FlowProcessing:
         ]
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
-
-        short_table_name = ""
-        if len(table_name) > 60:
-            short_table_name = self.__prepare_table(table_name)
 
         tech_parsedColumns = [
             {'name': 'ChangeId', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
@@ -222,12 +151,11 @@ class FlowProcessing:
                 "parent_table": '',
                 "preFilterCondition": preFilterCondition,
                 "postFilterCondition": postFilterCondition,
-                "short_table_name": short_table_name
+                "full_table_name": ""
             }
 
     def append_columns(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str, anyOfRefs:int) -> None:
-        alias = self.__prepare_alias(path, table_name)
-        self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": alias, "description": describe_attr}]
+        self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": path, "description": describe_attr}]
 
 
     def update_path(self, path:str, key:str) -> str:
@@ -241,12 +169,12 @@ class FlowProcessing:
 
         if len(explodedColumns) == 1:
             new_explodedColumns.append(path)
-            table = table + "_" + "".join(new_explodedColumns[-1].split(".")[1:])
+            table = table + "_" + ".".join(new_explodedColumns[-1].split(".")[1:])
         else:
             prefix = new_explodedColumns[-1].split(".")[-1]
             postfix = path.split(".")[1:]
             new_explodedColumns.append(".".join([prefix] + postfix))
-            table = table + "_" + "".join(new_explodedColumns[-1].split(".")[1:])
+            table = table + "_" + ".".join(new_explodedColumns[-1].split(".")[1:])
         path = path.split(".")[-1]
         return {"path":path, "explodedColumns":new_explodedColumns, "table":table}
 

@@ -1,4 +1,4 @@
-def test(data:dict, base_system_source:str, database:str, file_name:str) -> None:
+def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> None:
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils import get_column_letter

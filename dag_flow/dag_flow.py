@@ -27,7 +27,7 @@ class Flow:
 
     def create_flow(self) -> list:
         flows = []
-        for key, values in self.json_data.flow.items():
+        for key, values in self.json_data.new_data.items():
             table_name = key
             parsedColumns = copy.deepcopy(values['parsedColumns'])
             for i in parsedColumns:
