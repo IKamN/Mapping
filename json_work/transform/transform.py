@@ -1,4 +1,7 @@
 from json_work.extract.extract import Extract
+from json_work.transform.schemes import Table, ParsedColumns, TableAttributes, Flow
+from dataclasses import dataclass, asdict
+
 
 class Transform(Extract):
     def iterate_refs(self, database:str):
@@ -45,7 +48,7 @@ class Transform(Extract):
             explodedColumns = ["payload"]
             describe_attr = ""
             listing_definitions(ref, start_table, start_path, explodedColumns, describe_attr)
-
+        print([table.table_name for table in flow.new_flow.tables])
         return flow
 
 
@@ -105,6 +108,7 @@ class FlowProcessing:
         self.meta_class = meta_class
         self.flow: dict = {}
         self.tab_lvl = 0
+        self.new_flow = Flow(tables=[])
 
 
     def append_hash(self, table_name:str, explodedColumns:list):
@@ -130,13 +134,21 @@ class FlowProcessing:
         self.flow[table_name]["parent_table"] = parent_table
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
-
         tech_parsedColumns = [
             {'name': 'ChangeId', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
             {'name': 'ChangeType', 'colType': 'string', "description": "Тип изменений"},
             {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Временная метка сообщения"},
             {'name': 'Hdp_Processed_Dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
         ]
+        parsed_object = []
+        for item in tech_parsedColumns:
+            parsed_rows = ParsedColumns(
+                name = item["name"],
+                colType=item["colType"],
+                description=item["description"]
+            )
+            parsed_object.append(parsed_rows)
+
 
         if anyOfExists == 1:
             preFilterCondition = f"value like '%Class_:_{self.meta_class}%'"
@@ -144,6 +156,22 @@ class FlowProcessing:
         else:
             preFilterCondition = f"value like '%Class_:_{self.meta_class}%' and value like '%payload.Id_:_%'"
             postFilterCondition = f"payload.Id = ''"
+
+        table_attr = TableAttributes(
+            describe_table = describe_table,
+            explodedColumns = explodedColumns,
+            tab_lvl = self.tab_lvl,
+            parsedColumns = parsed_object,
+            preFilterCondition = preFilterCondition,
+            postFilterCondition = postFilterCondition
+        )
+
+        new_table = Table(
+            table_name = table_name,
+            attributes = table_attr
+        )
+
+        self.new_flow.tables.append(new_table)
 
         if table_name not in self.flow:
             self.flow[table_name] = {
@@ -159,6 +187,19 @@ class FlowProcessing:
 
     def append_columns(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str, anyOfRefs:int) -> None:
         self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": path, "description": describe_attr}]
+        new_parsedColumns = [ParsedColumns(
+            name=path,
+            colType=colType,
+            alias=path,
+            description=describe_attr
+        )]
+        try:
+            table = next(table for table in self.new_flow.tables if table.table_name == table_name)
+            table.attributes.parsedColumns.extend(new_parsedColumns)
+        except StopIteration:
+            print("Table not found")
+
+
 
 
     def update_path(self, path:str, key:str) -> str:
