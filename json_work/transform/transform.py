@@ -21,7 +21,8 @@ class Transform(Extract):
                 for key, value in node.properties.items():
                     new_path = flow.update_path(path, key)
                     attr_key = Attributes(value)
-                    if len(attr_key.refs) != 0:
+                    cnt_refs = len(attr_key.refs)
+                    if cnt_refs != 0:
                         for ref in attr_key.refs:
                             if (hasattr(attr_key, "type")) and (attr_key.type == 'array'):
                                 updated = flow.next_array(new_path, explodedColumns, table)
@@ -125,6 +126,8 @@ class FlowProcessing:
         self.flow[parent_table]["parsedColumns"] += [
             {"name": parent_path, "colType": "hash", "alias": parent_alias, "description": parent_describe}
         ]
+
+        self.flow[table_name]["parent_table"] = parent_table
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
 

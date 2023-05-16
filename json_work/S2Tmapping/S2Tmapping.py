@@ -24,7 +24,6 @@ def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> N
     index = 1
     for table_name, table_data in data.items():
         source_table = re.sub(r'^.*?_', '', table_name)
-        parent_table = re.sub(r'^.*?_', '', table_data["parent_table"])
         schema = f"prod_repl_subo_{database}"
         for column_data in table_data['parsedColumns']:
             tag_name = ""
@@ -34,20 +33,20 @@ def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> N
                 tag_name = column_data["name"]
             else:
                 tag_name = ".".join(column_data["name"].split(".")[1:]) if column_data["colType"] != "hash" else ".".join(column_data["name"].split(".")[1:]) + "_hash"
-            code_attr = tag_name.replace(".", "_")
 
             tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data["colType"] != "hash" else "New_hash"
             column_data["colType"] = "string" if column_data["colType"] == "hash" else column_data["colType"]
+            parent_table = "_".join(table_name.split("_")[:-1]) if table_data["tab_lvl"] != 0 else ""
             if "alias" in column_data:
                 row_data = [index, "Реплика", base_system_source, tag_json, source_table, parent_table, table_data["describe_table"],
                             table_data["tab_lvl"], tag_name, column_data["description"], column_data["colType"], "", "", "", "", "", "",
-                            "1642_19 Озеро данных", schema, table_name, table_data["parent_table"], table_data["describe_table"], table_data["tab_lvl"],
-                            code_attr, column_data['description'], "", column_data['colType']]
+                            "1642_19 Озеро данных", schema, table_name, parent_table, table_data["describe_table"], table_data["tab_lvl"],
+                            column_data["alias"], column_data['description'], "", column_data['colType']]
             else:
                 row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, parent_table,
                             table_data["describe_table"], table_data["tab_lvl"], "",
                             "", column_data["colType"], "", "", "", "", "", "",
-                            "1642_19 Озеро данных", schema, table_name, table_data["parent_table"],  table_data["describe_table"], table_data["tab_lvl"],
+                            "1642_19 Озеро данных", schema, table_name, parent_table,  table_data["describe_table"], table_data["tab_lvl"],
                             column_data["name"], column_data['description'], "", column_data['colType']]
             index += 1
             ws.append(row_data)

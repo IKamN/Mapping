@@ -7,10 +7,14 @@ class Naming:
         self.sorted_data:list = sorted(json_data.flow.keys(), key=len)
         self.new_data:dict = {}
 
-        def shorten_string(string:str) -> str:
-            elements = string.split("_")
+        def shorten_table(old_table:str) -> str:
+            elements = old_table.split("_")
+            # print(old_table)
             if len(elements) <= 2:
-                return string
+                if len(old_table) > 60:
+                    self.json_data.flow[old_table]["full_table_name"] = old_table
+                    return self.__prepare_table(old_table)
+                return old_table
             i = 0
             while i < len(elements) - 1:
                 if "." in elements[i + 1]:
@@ -21,6 +25,12 @@ class Naming:
                     elements = temp_string.split("_")
                 else:
                     i += 1
+            if len("_".join(elements).replace(".", "")) > 60:
+                short_name = self.__prepare_table(old_table)
+                print(short_name)
+                print(old_table)
+                self.json_data.flow[old_table]["full_table_name"] = old_table
+                return self.__prepare_table(old_table)
             return "_".join(elements).replace(".", "")
 
         def shorten_alias(table_name:str) -> str:
@@ -43,17 +53,21 @@ class Naming:
 
 
             def rename_alias(old_alias:str) -> str:
-                alias = ""
+                alias = old_alias
                 result_string = old_alias
+                # print(old_alias)
                 while "." in result_string:
                     if ("hash" in old_alias) and len(result_string.split(".")) == 2:
                         alias = result_string.replace(".", "_")
                         return alias
 
-                    result_string = re.sub(r'^[^.]+\.', '', result_string)
-
                     if old_alias.replace(".", "_") in alias_lst:
                         alias = re.sub(r'\.([^\.]+)$', r'\g<0>\g<1>', old_alias).replace(".", "_")
+                        return alias
+
+                    result_string = re.sub(r'^[^.]+\.', '', result_string)
+
+                    if result_string.replace(".", "_") in alias_lst:
                         return alias
 
                     if result_string.replace(".", "_") not in alias_lst:
@@ -67,10 +81,10 @@ class Naming:
         for index in range(0, len(self.sorted_data)):
             old_table_name = self.sorted_data[index]
             shorten_alias(old_table_name)
-            new_table_name = shorten_string(self.sorted_data[index])
+            new_table_name = shorten_table(self.sorted_data[index])
             self.new_data[new_table_name] = json_data.flow.pop(old_table_name)
-            self.sorted_data[index] = shorten_string(self.sorted_data[index])
-        pprint.pprint(self.new_data)
+            self.sorted_data[index] = shorten_table(self.sorted_data[index])
+        # pprint.pprint(self.new_data)
 
 
 

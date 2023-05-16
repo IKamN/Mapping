@@ -1,10 +1,6 @@
-file_dir: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/sales'
-
-file_di: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/sales'
-file_d: '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/new'
+file_dir: 'D:\Projects\VTB\Mapping_files\1498\test'
 
 
-old_mapping_flag: 'no'
 file_name: '11111'
 base_system_source: '11111'
 base_system_target: '1642_19 Озеро данных'
