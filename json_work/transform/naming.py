@@ -6,14 +6,16 @@ class Naming:
         self.json_data = json_data
         self.sorted_data:list = sorted(json_data.flow.keys(), key=len)
         self.new_data:dict = {}
+        self.name_flag: bool = False
 
         def shorten_table(old_table:str) -> str:
             elements = old_table.split("_")
             # print(old_table)
             if len(elements) <= 2:
                 if len(old_table) > 60:
-                    self.json_data.flow[old_table]["full_table_name"] = old_table
-                    return self.__prepare_table(old_table)
+                    self.name_flag = True
+                    self.json_data.flow[old_table]["full_table_name"] = old_table.replace(".", "")
+                    return self.cut_string(old_table).replace(".", "")
                 return old_table
             i = 0
             while i < len(elements) - 1:
@@ -26,11 +28,9 @@ class Naming:
                 else:
                     i += 1
             if len("_".join(elements).replace(".", "")) > 60:
-                short_name = self.__prepare_table(old_table)
-                print(short_name)
-                print(old_table)
-                self.json_data.flow[old_table]["full_table_name"] = old_table
-                return self.__prepare_table(old_table)
+                self.name_flag = True
+                self.json_data.flow[old_table]["full_table_name"] = old_table.replace(".", "")
+                return self.cut_string(old_table).replace(".", "")
             return "_".join(elements).replace(".", "")
 
         def shorten_alias(table_name:str) -> str:
@@ -55,7 +55,6 @@ class Naming:
             def rename_alias(old_alias:str) -> str:
                 alias = old_alias
                 result_string = old_alias
-                # print(old_alias)
                 while "." in result_string:
                     if ("hash" in old_alias) and len(result_string.split(".")) == 2:
                         alias = result_string.replace(".", "_")
@@ -78,55 +77,20 @@ class Naming:
                 new_alias = rename_alias(alias)
                 find_alias(alias, new_alias)
 
+        #print(self.sorted_data)
         for index in range(0, len(self.sorted_data)):
             old_table_name = self.sorted_data[index]
             shorten_alias(old_table_name)
             new_table_name = shorten_table(self.sorted_data[index])
             self.new_data[new_table_name] = json_data.flow.pop(old_table_name)
-            self.sorted_data[index] = shorten_table(self.sorted_data[index])
-        # pprint.pprint(self.new_data)
+            self.sorted_data[index] = new_table_name
 
-
-
-    def __prepare_table(self, start_table:str) -> str:
-        import re
-        tmp = start_table.split('_')[1:]
-        prefix = start_table.split('_')[0]
-        letters = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']
-        for i in range(0, len(tmp) - 1):
-            if i == 0:
-                for l in range(len(tmp[i]) - 1, 0, -1):
-                    if re.search('[A-Z]', tmp[i][l]):
-                        for r in range(2, 7):
-                            if tmp[i][l + r] in letters:
-                                tmp[i] = tmp[i][0:l + r + 1]
-                                break
-                        break
-            else:
-                parts = re.findall('[A-Z][^A-Z]*', tmp[i])
-                if len(parts) > 1:
-                    for k in range(0, len(parts)):
-                        for l in range(0, len(parts[k])):
-                            if re.search('[A-Z]', parts[k][l]):
-                                for r in range(2, 7):
-                                    if parts[k][r] in letters:
-                                        tmp[i] = tmp[i].replace(parts[k], parts[k][0:r + 1])
-                                        break
-                                break
-                        if len(prefix + '_' + '_'.join(tmp)) > 60:
-                            continue
-                        else:
-                            break
-                else:
-                    for l in range(0, len(parts)):
-                        if re.search('[A-Z]', parts[0]):
-                            for r in range(3, 7):
-                                if tmp[i][r] in letters:
-                                    tmp[i] = tmp[i][0:r + 1]
-                                    break
-                            break
-            if len(prefix + '_' + '_'.join(tmp)) > 60:
-                continue
-            else:
-                break
-        return prefix + '_' + '_'.join(tmp)
+    def cut_string(self, table_name:str) -> str:
+        split_string = table_name.split('_')
+        for j in range(2, len(split_string)):
+            if any(c.isupper() for c in split_string[j]):
+                new_substring = ''.join([s for s in split_string[j] if s.isupper()])
+                split_string[j] = new_substring
+            new_string = '_'.join(split_string)
+            if len(new_string) <= 60:
+                return new_string

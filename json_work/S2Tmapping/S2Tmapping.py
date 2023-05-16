@@ -1,4 +1,4 @@
-def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> None:
+def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils import get_column_letter
@@ -17,12 +17,17 @@ def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> N
 
     # Create headers
     headers = ["#", "Тип объекта",
-               "База/Система", "Тэг в JSON", "Таблица", "Название родительской таблицы", "Описание таблицы", "tab_lvl", "Код атрибута", "Краткое описание таблицы", "Тип данных","Длина", "PK", "FK", "Not Null", "Status", "Version",
-               "База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "tab_lvl", "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null", "Rejectable", "Trace New Values",]
+               "База/Система", "Тэг в JSON", "Таблица", "Название родительской таблицы", "Описание таблицы", "tab_lvl",
+               "Код атрибута", "Краткое описание таблицы", "Тип данных", "Длина", "PK", "FK", "Not Null", "Status",
+               "Version",
+               "База/Система", "Схема", "Таблица", "Полное наименование таблицы", "Название родительской таблицы", "Описание таблицы", "tab_lvl",
+               "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null",
+               "Rejectable", "Trace New Values"]
+
     ws.append(headers)
 
     index = 1
-    for table_name, table_data in data.items():
+    for table_name, table_data in data.new_data.items():
         source_table = re.sub(r'^.*?_', '', table_name)
         schema = f"prod_repl_subo_{database}"
         for column_data in table_data['parsedColumns']:
@@ -37,17 +42,17 @@ def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> N
             tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data["colType"] != "hash" else "New_hash"
             column_data["colType"] = "string" if column_data["colType"] == "hash" else column_data["colType"]
             parent_table = "_".join(table_name.split("_")[:-1]) if table_data["tab_lvl"] != 0 else ""
-            if "alias" in column_data:
-                row_data = [index, "Реплика", base_system_source, tag_json, source_table, parent_table, table_data["describe_table"],
-                            table_data["tab_lvl"], tag_name, column_data["description"], column_data["colType"], "", "", "", "", "", "",
-                            "1642_19 Озеро данных", schema, table_name, parent_table, table_data["describe_table"], table_data["tab_lvl"],
-                            column_data["alias"], column_data['description'], "", column_data['colType']]
-            else:
-                row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, parent_table,
-                            table_data["describe_table"], table_data["tab_lvl"], "",
-                            "", column_data["colType"], "", "", "", "", "", "",
-                            "1642_19 Озеро данных", schema, table_name, parent_table,  table_data["describe_table"], table_data["tab_lvl"],
-                            column_data["name"], column_data['description'], "", column_data['colType']]
+
+            tag_json = tag_json if "alias" in column_data else ""
+            description = column_data["description"] if "alias" in column_data else ""
+            code_attr = column_data["alias"] if "alias" in column_data else column_data["name"]
+
+            row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, parent_table,
+                        table_data["describe_table"], table_data["tab_lvl"], "",
+                        description, column_data["colType"], "", "", "", "", "", "",
+                        "1642_19 Озеро данных", schema, table_name, table_data["full_table_name"], parent_table,
+                        table_data["describe_table"], table_data["tab_lvl"],
+                        code_attr, column_data['description'], "", column_data['colType']]
             index += 1
             ws.append(row_data)
 
@@ -77,10 +82,10 @@ def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> N
     for col in range(1, 3):
         for cell in ws[f"A{col}":f"B{col}"][0]:
             cell.fill = fiolet_fill
-        for cell in ws[f"R{col}":f"AG{col}"][0]:
+        for cell in ws[f"R{col}":f"AH{col}"][0]:
             cell.fill = blue_fill
 
-        for cell in ws[f"A{col}:AG{col}"][0]:
+        for cell in ws[f"A{col}:AH{col}"][0]:
             cell.border = border
 
     for cell in ws[f"C{1}":f"Q{1}"][0]:
@@ -95,7 +100,7 @@ def Mapping(data:dict, base_system_source:str, database:str, file_name:str) -> N
     ws.merge_cells("C1:Q1")
     ws["C1"] = "Source"
 
-    ws.merge_cells("R1:AG1")
+    ws.merge_cells("R1:AH1")
     ws["R1"] = "Target"
 
     # Выравнивание текста по центру в объединенных ячейках

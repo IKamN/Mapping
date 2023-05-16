@@ -32,8 +32,7 @@ def read_json(params):
             # save excel mapping
             replace_version = json_file.split('_')[-1][2:-5] if len(json_file.split('_')[-1][2:-5]) > 0 else '1.0'
             xlsx_name = os.path.join(os.path.dirname(json_file), f'S2T_mapping_{params["file_name"]}_' + os.path.basename(json_file).replace('json', 'xlsx')).replace(replace_version, str(params['mapping_version']))
-            Mapping(rename_data.new_data, base_system_source, database, xlsx_name)
-            # dfe.save_excel(mapping_dict, xlsx_name, params['base_system_target'], params['base_system_source'], params['id_is'], params['database'])
+            Mapping(rename_data, base_system_source, database, xlsx_name)
 
     return flows
 
