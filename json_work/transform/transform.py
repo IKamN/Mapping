@@ -48,7 +48,7 @@ class Transform(Extract):
             explodedColumns = ["payload"]
             describe_attr = ""
             listing_definitions(ref, start_table, start_path, explodedColumns, describe_attr)
-        print([table.table_name for table in flow.new_flow.tables])
+        # print([table.table_name for table in flow.new_flow.tables])
         return flow
 
 
@@ -122,6 +122,13 @@ class FlowProcessing:
         alias_hash = array_path.replace("_array", ".hash")
         array_describe = f"связь с {parent_table}"
 
+        hash_columns = [
+            {"name": array_path, "colType": "hash", "alias": alias_hash, "description": array_describe},
+            {"name": parent_path, "colType": "hash", "alias": parent_alias, "description": parent_describe}
+        ]
+        self.new_flow.append_attr(table_name, parent_table=parent_table, parsedColumns=hash_columns)
+
+
 
         self.flow[table_name]["parsedColumns"].insert(4,
             {"name": array_path, "colType": "hash", "alias": alias_hash, "description": array_describe}
@@ -132,6 +139,8 @@ class FlowProcessing:
         ]
 
         self.flow[table_name]["parent_table"] = parent_table
+
+
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
         tech_parsedColumns = [
@@ -187,24 +196,10 @@ class FlowProcessing:
 
     def append_columns(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str, anyOfRefs:int) -> None:
         self.flow[table_name]["parsedColumns"] += [{"name": path, "colType": colType, "alias": path, "description": describe_attr}]
-        new_parsedColumns = [ParsedColumns(
-            name=path,
-            colType=colType,
-            alias=path,
-            description=describe_attr
-        )]
-        try:
-            table = next(table for table in self.new_flow.tables if table.table_name == table_name)
-            table.attributes.parsedColumns.extend(new_parsedColumns)
-        except StopIteration:
-            print("Table not found")
-
-
-
+        self.new_flow.append_attr(table_name, parsedColumns=[{"name": path, "colType": colType, "alias": path, "description": describe_attr}])
 
     def update_path(self, path:str, key:str) -> str:
         return path + f".{key}"
-
 
     def next_array(self, path:str, explodedColumns:list, table:str) -> dict:
         self.tab_lvl = self.tab_lvl + 1

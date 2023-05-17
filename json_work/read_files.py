@@ -7,7 +7,7 @@ def read_json(params):
     from json_work.transform.transform import Transform
     from dag_flow.dag_flow import Flow
     from json_work.S2Tmapping.S2Tmapping import Mapping
-    from json_work.transform.naming import Naming
+    from json_work.transform.naming import Naming, NamingPrepare
 
     flows = []
     for filename in os.listdir(params['file_dir']):
@@ -25,6 +25,8 @@ def read_json(params):
 
             # transform table names, alias in parsedColumns
             rename_data = Naming(json_data)
+            test = NamingPrepare(json_data)
+
 
             # Return flows list
             flows += Flow(rename_data, loadType=loadType, topic=topic, colsToHash=colsToHash).create_flow()
