@@ -22,7 +22,7 @@ def read_json(params):
 
             # parsing json, return FlowProcess object
             json_data = Transform(json_file).iterate_refs(database)
-            print(json_data.new_flow)
+
             # transform table names, alias in parsedColumns
             rename_data = NamingPrepare(json_data)
 
