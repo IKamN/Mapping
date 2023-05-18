@@ -1,16 +1,10 @@
-'dir': 'D:\Projects\VTB\Mapping_files\1963\test'
-'subo_name': '1816 Полномочия представителя ФЛ'
-'id_ris': '1816'
-'mapping_version': '2.0'
-'loadType': 'Scd0Appenddddd'
 'database': 'windows'
-'topic': 'new'
-'system_target': '1642_19 Озеро данных'
 'developer': 'Kamenev Ilya'
 'docs': 'windows'
-
-
-
-
-
-
+'file_dir': '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/sales'
+'id_ris': '1816'
+'loadType': 'Scd0Appenddddd'
+'mapping_version': '2.0'
+'subo_name': '1816 Полномочия представителя ФЛ'
+'system_target': '1642_19 Озеро данных'
+'topic': 'n/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/Mapping/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/Mappingew'
