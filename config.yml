@@ -1,11 +1,16 @@
-'base_system_source': '1816 Полномочия представителя ФЛ'
-'base_system_target': '1642_19 Озеро данных'
-'database': 'tttttt'
-'developer': 'Kamenev Ilya'
-'docs': 'httpsdfdfsdf'
-'file_dir': '/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/json_excel/sales'
-'file_name': '1816 Полномочия представителя ФЛ'
-'id_is': '1816'
-'loadType': 'Scd0Appenddddd'
+'dir': 'D:\Projects\VTB\Mapping_files\1963\test'
+'subo_name': '1816 Полномочия представителя ФЛ'
+'id_ris': '1816'
 'mapping_version': '2.0'
+'loadType': 'Scd0Appenddddd'
+'database': 'windows'
 'topic': 'new'
+'system_target': '1642_19 Озеро данных'
+'developer': 'Kamenev Ilya'
+'docs': 'windows'
+
+
+
+
+
+

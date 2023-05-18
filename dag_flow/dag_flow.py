@@ -28,7 +28,6 @@ class Flow:
         for values in self.json_data.flow_data.new_flow.tables:
 
             parsedColumns = copy.deepcopy(values.attributes.parsedColumns)
-            print(parsedColumns)
             for i in parsedColumns:
                 del i.description
             for i in parsedColumns:

@@ -18,16 +18,6 @@ class TableAttributes:
     explodedColumns: list[str]
     parsedColumns: list[ParsedColumns]
 
-# class TableAttributes:
-#     def __init__(self, explodedColumns:list[str]):
-#         self.explodedColumns = explodedColumns
-#         self.parsedColumns = []
-#
-#
-#     def add_column(self, column: ParsedColumns):
-#         self.parsedColumns.append(column)
-
-
 @dataclass
 class Table:
     table_name: str
