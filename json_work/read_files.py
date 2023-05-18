@@ -4,10 +4,11 @@ def read_json(params):
     :return: list flows for dag
     """
     import os
+    from dataclasses import asdict
     from json_work.transform.transform import Transform
     from dag_flow.dag_flow import Flow
     from json_work.S2Tmapping.S2Tmapping import Mapping
-    from json_work.transform.naming import Naming, NamingPrepare
+    from json_work.transform.naming import NamingPrepare
 
     flows = []
     for filename in os.listdir(params['file_dir']):
@@ -15,21 +16,19 @@ def read_json(params):
             json_file = os.path.join(params['file_dir'], filename)
             database = params['database']
             loadType = params['loadType']
-            colsToHash = params['colsToHash']
             topic = params['topic']
             file_dir = params['file_dir']
             base_system_source = params["base_system_source"]
 
             # parsing json, return FlowProcess object
             json_data = Transform(json_file).iterate_refs(database)
-
+            print(json_data.new_flow)
             # transform table names, alias in parsedColumns
-            rename_data = Naming(json_data)
-            test = NamingPrepare(json_data)
+            rename_data = NamingPrepare(json_data)
 
 
             # Return flows list
-            flows += Flow(rename_data, loadType=loadType, topic=topic, colsToHash=colsToHash).create_flow()
+            flows += Flow(rename_data, loadType=loadType, topic=topic).create_flow()
 
             # save excel mapping
             replace_version = json_file.split('_')[-1][2:-5] if len(json_file.split('_')[-1][2:-5]) > 0 else '1.0'

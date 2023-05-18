@@ -13,12 +13,10 @@ def read_config():
             'base_system_target':raw['base_system_target'],
             'docs': raw['docs'],
             'developer': raw['developer'],
-            'etl_schema': raw['etl_schema'],
             'id_is': raw['id_is'],
             'loadType': raw['loadType'],
             'database': raw['database'],
             'topic': raw['topic'],
-            'colsToHash': raw['colsToHash'],
             'mapping_version' :raw['mapping_version']
         }
 

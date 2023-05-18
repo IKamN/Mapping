@@ -15,7 +15,6 @@ def write_file(params, flows):
                              params['database'],
                              params['id_is'],
                              params['topic'],
-                             params['etl_schema'],
                              flows))
 
     import re

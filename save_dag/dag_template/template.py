@@ -5,7 +5,6 @@ def tmp_dag(docs,
             database,
             id_is,
             topic,
-            etl_schema,
             flows):
     res = f"""
 \"""

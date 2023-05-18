@@ -1,11 +1,10 @@
 import copy
 
 class Flow:
-    def __init__(self, json_data, loadType:str, topic:str, colsToHash:str=''):
+    def __init__(self, json_data, loadType:str, topic:str):
         self.json_data = json_data
         self.loadType = loadType
         self.topic = topic.lower()
-        self.colsToHash = colsToHash
 
     def define_target_flow(self, table_name:str) -> dict:
         target = {}
@@ -20,27 +19,27 @@ class Flow:
             }
         else:
             target = {
-                'table': table_name,
-                'colsToHash': self.colsToHash
+                'table': table_name
             }
         return target
 
     def create_flow(self) -> list:
         flows = []
-        for key, values in self.json_data.new_data.items():
-            table_name = key
-            parsedColumns = copy.deepcopy(values['parsedColumns'])
+        for values in self.json_data.flow_data.new_flow.tables:
+
+            parsedColumns = copy.deepcopy(values.attributes.parsedColumns)
+            print(parsedColumns)
             for i in parsedColumns:
-                del i["description"]
+                del i.description
             for i in parsedColumns:
-                if i["name"] == "Hdp_Processed_Dttm":
+                if i.name == "Hdp_Processed_Dttm":
                     parsedColumns.remove(i)
 
 
-            explodedColumns = values['explodedColumns']
-            preFilterCondition = values['preFilterCondition']
-            postFilterCondition = values['postFilterCondition']
-            target = self.define_target_flow(table_name)
+            explodedColumns = values.attributes.explodedColumns
+            preFilterCondition = values.preFilterCondition
+            postFilterCondition = values.postFilterCondition
+            target = self.define_target_flow(values.table_name)
 
             flows.append(
                 {

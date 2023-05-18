@@ -1,22 +1,98 @@
-# Define a dictionary with attribute names and values
-my_dict = {"name": "John", "age": 30, "location": "New York", 'properties':{'one':[1,2,3], 'two':['asd', 'asda']}}
+import tkinter as tk
+from tkinter import ttk, filedialog
+import yaml
+import subprocess
 
-# Define a new class
-class Person:
-    def __init__(self, my_dict:dict):
-        # Dynamically set attributes on the class based on the dictionary
-        for key, value in my_dict.items():
-            setattr(Person, key, value)
+def submit():
+    # Функция, которая будет вызываться при отправке формы
+    # Здесь вы можете обрабатывать введенные пользователем значения
 
-    def check(self):
-        print([(key, value) for key, value in self.properties.items()])
+    # Чтение значений из полей
+    values = {}
+    for i in range(11):
+        entry = entries[i]
+        field_name = labels[i]
+        value = entry.get()
+        values[field_name] = value
+
+    # Обновление файла config.yml с новыми значениями
+    with open("config.yml", "w", encoding="utf-8") as file:
+        yaml.dump(values, file, allow_unicode=True, default_style="'")
+
+    subprocess.run(["python3", "main.py"])
+
+    root.destroy()
+
+root = tk.Tk()
+
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Вычисление координат окна
+window_width = 800
+window_height = 300
+x = (screen_width - window_width) // 2
+y = (screen_height - window_height) // 2
+
+# Установка геометрии окна
+root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+# Создание названий полей
+labels = [
+    "file_dir",
+    "file_name",
+    "base_system_source",
+    "base_system_target",
+    "mapping_version",
+    "docs",
+    "developer",
+    "id_is",
+    "loadType",
+    "database",
+    "topic"
+]
+
+# Значения по умолчанию из файла config.yml
+default_values = {}
+try:
+    with open("config.yml", "r", encoding="utf-8") as file:
+        default_values = yaml.safe_load(file)
+except FileNotFoundError:
+    pass
+
+# Создание 10 полей и заполнение значениями по умолчанию
+entries = []
+for i in range(11):
+    label = tk.Label(root, text=labels[i])
+    label.grid(row=i, column=0, sticky=tk.E)
+    entry = tk.Entry(root, width=60)
+    entry.grid(row=i, column=1)
+    field_name = labels[i]
+    entry.insert(0, default_values.get(field_name, ""))  # Установка значения по умолчанию из config.yml
+    entries.append(entry)
+
+# Поле выбора директории
+def browse_directory():
+    directory = filedialog.askdirectory()
+    entry_directory.delete(0, tk.END)
+    entry_directory.insert(0, directory)
+
+label_directory = tk.Label(root, text="file_dir")
+label_directory.grid(row=0, column=0, sticky=tk.E)
+entry_directory = tk.Entry(root, width=50)
+entry_directory.grid(row=0, column=1)
+entry_directory.insert(0, default_values.get("file_dir", ""))  # Установка значения по умолчанию из config.yml
+button_browse = tk.Button(root, text="Browse", command=browse_directory)
+button_browse.grid(row=0, column=2)
+
+# Поле выбора типа загрузки
+label_load_type = tk.Label(root, text="loadType")
+label_load_type.grid(row=8, column=0, sticky=tk.E)
+load_type_var = tk.StringVar(root)
 
 
-# Create an instance of the new class
-person = Person(my_dict)
+# Кнопка отправки формы
+submit_button = tk.Button(root, text="Submit", command=submit)
+submit_button.grid(row=14, columnspan=3)
 
-# Access the attributes of the new class instance
-# print(person.name)  # Output: John
-# print(person.age)  # Output: 30
-# print(person.location)  # Output: New York
-print(person.check())
+root.mainloop()
