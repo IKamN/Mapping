@@ -1,50 +1,8 @@
-from schema import s2t
-import typing
-
-if typing.TYPE_CHECKING:
-    from json_work.transform.naming import NamingPrepare
-
-class Record:
-    def __init__(self, data:NamingPrepare):
-        self.data = data
-
-
-
-    record = [index,  # "#"
-                "Реплика",  # "Тип объекта"
-                base_system_source,  # "База/Система"
-                data.flow_data.meta_class  # "Класс"
-                # "Наименование класса"
-                tag_json,  # "Тэг в JSON"
-                # "Описание Тэга"
-                # "Тип данных"
-                "",  # "Длина"
-                "",  # "PK"
-                "",  # "FK"
-                "",  # "Not Null"
-                "1642_19 Озеро данных",  # "База/Система"
-                schema,  # "Схема"
-                values.table_name,  # "Таблица"
-                values.parent_table,  # "Название родительской таблицы"
-                values.describe_table,  # "Описание таблицы"
-                code_attr,  # "Код атрибута"
-                column_data.description,  # "Описание атрибута"
-                "",  # "Комментарий"
-                column_data.colType,  # "Тип данных"
-                "",  # "Length"
-                "",  # "PK"
-                "",  # "FK"
-                "",  # "Not Null",
-                "",  # "Rejectable"
-                "",  # "Trace New Values"
-    ]
+import re
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
-    import openpyxl
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    from openpyxl.utils import get_column_letter
-    import re
-
     # create new book excel
     wb = openpyxl.Workbook()
 
@@ -57,7 +15,8 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     ws.column_dimensions['C'].width = 15
 
     # Create headers
-    headers = ["#", "Тип объекта", "База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных",
+    headers = ["#", "Тип объекта",
+               "База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных",
                "Длина", "PK", "FK", "Not Null",
                "База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута",
                "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null",
@@ -80,8 +39,19 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                     column_data.name.split(".")[1:]) + "_hash"
 
             tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data.colType != "hash" else "New_hash"
+            descr_tag = f"{values.describe_table}.{column_data.description}"
+            source_colType = column_data.colType
+            notnull = "+" if column_data.name.lower() in ["changeid", "changetype", "hdp_processed_dttm"] else ""
             column_data.colType = "string" if column_data.colType == "hash" else column_data.colType
-            parent_table = "_".join(values.table_name.split("_")[:-1]) if values.tab_lvl != 0 else ""
+
+            comment = ""
+            if column_data.name in ["changeid", "changetype", "hdp_processed_dttm", "changetimestamp"]:
+                comment = "Техническое поле"
+            elif "hash" in column_data.name:
+                comment = column_data.description
+            else:
+                comment = ""
+
 
             if column_data.alias is not None:
                 code_attr = column_data.alias
@@ -94,11 +64,11 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
             row_data = [index,                      # "#"
                         "Реплика",                  # "Тип объекта"
                         base_system_source,         # "База/Система"
-                        data.flow_data.meta_class   # "Класс"
-                                                    # "Наименование класса"
+                        data.flow_data.meta_class,  # "Класс"
+                        values.describe_table,      # "Наименование класса"
                         tag_json,                   # "Тэг в JSON"
-                                                    # "Описание Тэга"
-                                                    # "Тип данных"
+                        descr_tag,                  # "Описание Тэга"
+                        source_colType,             # "Тип данных"
                         "",                         # "Длина"
                         "",                         # "PK"
                         "",                         # "FK"
@@ -110,12 +80,12 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                         values.describe_table,      # "Описание таблицы"
                         code_attr,                  # "Код атрибута"
                         column_data.description,    # "Описание атрибута"
-                        "",                         # "Комментарий"
+                        comment,                    # "Комментарий"
                         column_data.colType,        # "Тип данных"
                         "",                         # "Length"
                         "",                         # "PK"
                         "",                         # "FK"
-                        "",                         # "Not Null",
+                        notnull,                    # "Not Null",
                         "",                         # "Rejectable"
                         "",                         # "Trace New Values"
             ]

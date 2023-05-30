@@ -1,6 +1,6 @@
 from json_work import read_files
 from save_dag import write_dag
-from interface import interface
+# from interface import interface
 import os
 from config.config_file import setup_config
 
