@@ -3,7 +3,6 @@ from tkinter import filedialog
 import yaml
 
 
-
 class Config:
     pass
 
@@ -22,11 +21,7 @@ labels = [
     "topic"
 ]
 
-
 def get_interface(config_path):
-
-    def finish_work():
-        root.destroy()
 
     def submit():
         values = {}
@@ -43,6 +38,13 @@ def get_interface(config_path):
             yaml.dump(values, file, allow_unicode=True, default_style="'")
         root.destroy()
 
+
+
+    def browse():
+        import os
+        directory = os.path.dirname(filedialog.askopenfilename())
+        entries[0].delete(0, tk.END)
+        entries[0].insert(0, directory)
 
     root = tk.Tk()
     root.title("Autogen")
@@ -61,7 +63,6 @@ def get_interface(config_path):
         print("File config.yml not found")
 
     len_config = len(default_values)
-
     entries = []
     for i in range(0, len_config):
         label = tk.Label(root, text=labels[i], font=("Arial", 12), bg="#C8FDF1")
@@ -73,7 +74,7 @@ def get_interface(config_path):
         entries.append(entry)
 
     # Button "Browse"
-    button_browse = tk.Button(root, text="...", command= lambda: entry.insert(1, filedialog.askdirectory()))
+    button_browse = tk.Button(root, text="...", command=browse)
     button_browse.grid(row=0, column=4, sticky="w")
 
     # Button "Create"

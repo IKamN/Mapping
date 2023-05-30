@@ -1,3 +1,44 @@
+from schema import s2t
+import typing
+
+if typing.TYPE_CHECKING:
+    from json_work.transform.naming import NamingPrepare
+
+class Record:
+    def __init__(self, data:NamingPrepare):
+        self.data = data
+
+
+
+    record = [index,  # "#"
+                "Реплика",  # "Тип объекта"
+                base_system_source,  # "База/Система"
+                data.flow_data.meta_class  # "Класс"
+                # "Наименование класса"
+                tag_json,  # "Тэг в JSON"
+                # "Описание Тэга"
+                # "Тип данных"
+                "",  # "Длина"
+                "",  # "PK"
+                "",  # "FK"
+                "",  # "Not Null"
+                "1642_19 Озеро данных",  # "База/Система"
+                schema,  # "Схема"
+                values.table_name,  # "Таблица"
+                values.parent_table,  # "Название родительской таблицы"
+                values.describe_table,  # "Описание таблицы"
+                code_attr,  # "Код атрибута"
+                column_data.description,  # "Описание атрибута"
+                "",  # "Комментарий"
+                column_data.colType,  # "Тип данных"
+                "",  # "Length"
+                "",  # "PK"
+                "",  # "FK"
+                "",  # "Not Null",
+                "",  # "Rejectable"
+                "",  # "Trace New Values"
+    ]
+
 def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -16,12 +57,10 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     ws.column_dimensions['C'].width = 15
 
     # Create headers
-    headers = ["#", "Тип объекта",
-               "База/Система", "Тэг в JSON", "Таблица", "Название родительской таблицы", "Описание таблицы", "tab_lvl",
-               "Код атрибута", "Краткое описание таблицы", "Тип данных", "Длина", "PK", "FK", "Not Null", "Status",
-               "Version",
-               "База/Система", "Схема", "Таблица", "Полное наименование таблицы", "Название родительской таблицы", "Описание таблицы", "tab_lvl",
-               "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null",
+    headers = ["#", "Тип объекта", "База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных",
+               "Длина", "PK", "FK", "Not Null",
+               "База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута",
+               "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null",
                "Rejectable", "Trace New Values"]
 
     ws.append(headers)
@@ -51,43 +90,37 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                 code_attr = column_data.name
                 code_attr_source = ""
 
-            row_data = [index, "Реплика", base_system_source, tag_json, source_table, parent_table,
-                        values.describe_table, values.tab_lvl, code_attr_source,
-                        column_data.description, column_data.colType, "", "", "", "", "", "",
-                        "1642_19 Озеро данных", schema, values.table_name, values.full_table_name, values.parent_table,
-                        values.describe_table, values.tab_lvl,
-                        code_attr, column_data.description, "", column_data.colType]
+
+            row_data = [index,                      # "#"
+                        "Реплика",                  # "Тип объекта"
+                        base_system_source,         # "База/Система"
+                        data.flow_data.meta_class   # "Класс"
+                                                    # "Наименование класса"
+                        tag_json,                   # "Тэг в JSON"
+                                                    # "Описание Тэга"
+                                                    # "Тип данных"
+                        "",                         # "Длина"
+                        "",                         # "PK"
+                        "",                         # "FK"
+                        "",                         # "Not Null"
+                        "1642_19 Озеро данных",     # "База/Система"
+                        schema,                     # "Схема"
+                        values.table_name,          # "Таблица"
+                        values.parent_table,        # "Название родительской таблицы"
+                        values.describe_table,      # "Описание таблицы"
+                        code_attr,                  # "Код атрибута"
+                        column_data.description,    # "Описание атрибута"
+                        "",                         # "Комментарий"
+                        column_data.colType,        # "Тип данных"
+                        "",                         # "Length"
+                        "",                         # "PK"
+                        "",                         # "FK"
+                        "",                         # "Not Null",
+                        "",                         # "Rejectable"
+                        "",                         # "Trace New Values"
+            ]
             index += 1
             ws.append(row_data)
-
-    # for table_name, table_data in data.new_data.items():
-    #     source_table = re.sub(r'^.*?_', '', table_name)
-    #     schema = f"prod_repl_subo_{database}"
-    #     for column_data in table_data['parsedColumns']:
-    #         tag_name = ""
-    #         if "array" in column_data["name"]:
-    #             tag_name = column_data["name"].replace("array", "hash")
-    #         elif "." not in column_data["name"]:
-    #             tag_name = column_data["name"]
-    #         else:
-    #             tag_name = ".".join(column_data["name"].split(".")[1:]) if column_data["colType"] != "hash" else ".".join(column_data["name"].split(".")[1:]) + "_hash"
-    #
-    #         tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data["colType"] != "hash" else "New_hash"
-    #         column_data["colType"] = "string" if column_data["colType"] == "hash" else column_data["colType"]
-    #         parent_table = "_".join(table_name.split("_")[:-1]) if table_data["tab_lvl"] != 0 else ""
-    #
-    #         tag_json = tag_json if "alias" in column_data else ""
-    #         description = column_data["description"] if "alias" in column_data else ""
-    #         code_attr = column_data["alias"] if "alias" in column_data else column_data["name"]
-    #
-    #         row_data = [index, "Реплика", base_system_source, column_data['name'], source_table, parent_table,
-    #                     table_data["describe_table"], table_data["tab_lvl"], "",
-    #                     description, column_data["colType"], "", "", "", "", "", "",
-    #                     "1642_19 Озеро данных", schema, table_name, table_data["full_table_name"], parent_table,
-    #                     table_data["describe_table"], table_data["tab_lvl"],
-    #                     code_attr, column_data['description'], "", column_data['colType']]
-    #         index += 1
-    #         ws.append(row_data)
 
     for col in ws.columns:
         max_length = 0

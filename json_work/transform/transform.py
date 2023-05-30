@@ -3,7 +3,6 @@ from json_work.transform.schemes import Table, ParsedColumns, TableAttributes, F
 from dataclasses import dataclass, asdict
 
 
-
 class Transform(Extract):
     def iterate_refs(self, database:str):
         json_file = self.open_json()
@@ -106,7 +105,6 @@ class FlowProcessing:
         self.meta_class = meta_class
         self.tab_lvl = 0
         self.new_flow = Flow(tables=[])
-
 
     def append_hash(self, table_name:str, explodedColumns:list):
         parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]

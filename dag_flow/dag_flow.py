@@ -15,7 +15,8 @@ class Flow:
                 'table': table_name,
                 'aggregationField': 'dte',
                 'partitionFields': ['dte'],
-                'customPartitioning': 'Day'
+                'customPartitioning': 'Day',
+                'updateAllowed': True
             }
         else:
             target = {

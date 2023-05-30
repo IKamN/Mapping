@@ -1,6 +1,5 @@
 def read_json(config):
     """
-    :param params: user params from config
     :return: list flows for dag
     """
     import os

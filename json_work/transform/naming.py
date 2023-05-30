@@ -8,7 +8,8 @@ class NamingPrepare:
 
         def cut_string(table_name: str) -> str:
             split_string = table_name.split('_')
-            for j in range(2, len(split_string)):
+            start = 1 if len(split_string) == 2 else 2
+            for j in range(start, len(split_string)):
                 if any(c.isupper() for c in split_string[j]):
                     new_substring = ''.join([s for s in split_string[j] if s.isupper()])
                     split_string[j] = new_substring
@@ -16,7 +17,7 @@ class NamingPrepare:
                 if len(new_string) <= 60:
                     return new_string
 
-        def shorten_table(old_table:str) -> str:
+        def shorten_table(old_table: str) -> str:
             elements = old_table.split("_")
             if len(elements) <= 2:
                 if len(old_table) > 60:
@@ -38,8 +39,7 @@ class NamingPrepare:
                 return cut_string(old_table).replace(".", "")
             return "_".join(elements).replace(".", "")
 
-        def shorten_alias(table_name:str) -> str:
-
+        def shorten_alias(table_name: str) -> str:
             def get_alias(table_name: str) -> list:
                 alias_lst = []
                 for parsed_column in table_name.attributes.parsedColumns[4:]:
