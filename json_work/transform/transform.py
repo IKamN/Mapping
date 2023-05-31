@@ -60,7 +60,7 @@ class Attributes:
             elif key == "$ref":
                 setattr(self, "ref", value)
             elif (key == "type") and (value in ["number", "integer"]):
-                setattr(self, key, "bigint")
+                setattr(self, key, "string")
             elif (key == "type") and (value == "boolean"):
                 setattr(self, key, "string")
             else:

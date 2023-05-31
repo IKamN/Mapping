@@ -61,24 +61,26 @@ class NamingPrepare:
 
 
             def rename_alias(old_alias:str) -> str:
-                alias = old_alias
+                arr = "".join(table_name.attributes.explodedColumns[-1].split(".")[-1]) if len(table_name.attributes.explodedColumns) != 1 else table_name.attributes.explodedColumns[0]
+
+                alias = old_alias.replace(".", "_").replace(f"{arr}_", "").lower() if "hash" not in old_alias else old_alias.replace(".", "_").lower()
                 result_string = old_alias
-                while "." in result_string:
-                    if ("hash" in old_alias) and len(result_string.split(".")) == 2:
-                        alias = result_string.replace(".", "_")
-                        return alias
-
-                    if old_alias.replace(".", "_") in alias_lst:
-                        alias = re.sub(r'\.([^\.]+)$', r'\g<0>\g<1>', old_alias).replace(".", "_")
-                        return alias
-
-                    result_string = re.sub(r'^[^.]+\.', '', result_string)
-
-                    if result_string.replace(".", "_") in alias_lst:
-                        return alias
-
-                    if result_string.replace(".", "_") not in alias_lst:
-                        alias = result_string.replace(".", "_")
+                # while "." in result_string:
+                #     if ("hash" in old_alias) and len(result_string.split(".")) == 2:
+                #         alias = result_string.replace(".", "_")
+                #         return alias
+                #
+                #     if old_alias.replace(".", "_") in alias_lst:
+                #         alias = re.sub(r'\.([^\.]+)$', r'\g<0>\g<1>', old_alias).replace(".", "_")
+                #         return alias
+                #
+                #     result_string = re.sub(r'^[^.]+\.', '', result_string)
+                #
+                #     if result_string.replace(".", "_") in alias_lst:
+                #         return alias
+                #
+                #     if result_string.replace(".", "_") not in alias_lst:
+                #         alias = result_string.replace(".", "_")
                 return alias
 
             for alias in alias_lst:
@@ -90,6 +92,6 @@ class NamingPrepare:
             new_table_name = shorten_table(self.sorted_data[index])
             curr_table = self.flow_data.new_flow.find_table(old_table_name)
             shorten_alias(curr_table)
-            self.flow_data.new_flow.rename_table(old_table_name, new_table_name)
-            self.sorted_data[index] = new_table_name
+        self.flow_data.new_flow.rename_table(old_table_name, new_table_name)
+        self.sorted_data[index] = new_table_name
 

@@ -1,6 +1,6 @@
 import re
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.styles import PatternFill, Alignment, Border, Side
 
 def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     # create new book excel
@@ -16,11 +16,9 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
 
     # Create headers
     headers = ["#", "Тип объекта",
-               "База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных",
-               "Длина", "PK", "FK", "Not Null",
-               "База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута",
-               "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null",
-               "Rejectable", "Trace New Values"]
+               "База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных","Длина", "PK", "FK", "Not Null",
+               "База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null", "Rejectable", "Trace New Values"
+    ]
 
     ws.append(headers)
 
@@ -38,21 +36,34 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                 tag_name = ".".join(column_data.name.split(".")[1:]) if column_data.colType != "hash" else ".".join(
                     column_data.name.split(".")[1:]) + "_hash"
 
-            tag_json = f'{source_table.replace("_", ".")}[].{tag_name}' if column_data.colType != "hash" else "New_hash"
-            descr_tag = f"{values.describe_table}.{column_data.description}"
-            source_colType = column_data.colType
             notnull = "+" if column_data.name.lower() in ["changeid", "changetype", "hdp_processed_dttm"] else ""
-            column_data.colType = "string" if column_data.colType == "hash" else column_data.colType
 
-            comment = ""
-            if column_data.name in ["changeid", "changetype", "hdp_processed_dttm", "changetimestamp"]:
+            if column_data.name.lower() in ["changeid", "changetype", "changetimestamp"]:
                 comment = "Техническое поле"
-            elif "hash" in column_data.name:
+                tag_json = column_data.name
+                tag_descr = column_data.description
+                tag_colType = ""
+            elif column_data.name.lower() == "hdp_processed_dttm":
+                comment = "Техническое поле"
+                tag_json = ""
+                tag_descr = ""
+                tag_colType = ""
+            elif "hash" in column_data.colType:
                 comment = column_data.description
+                tag_json = ""
+                tag_descr = ""
+                tag_colType = ""
             else:
                 comment = ""
+                tag_descr = f"{values.describe_table}.{column_data.description}"
+                tag_colType = column_data.colType
+                if len(values.attributes.explodedColumns) == 1:
+                    tag_json = ".".join(column_data.name.split(".")[1:])
+                else:
+                    tag_json = f"{column_data.name.split('.')[0]}[].{'.'.join(column_data.name.split('.')[1:])}"
 
 
+            column_data.colType = "string" if column_data.colType == "hash" else column_data.colType
             if column_data.alias is not None:
                 code_attr = column_data.alias
                 code_attr_source = column_data.alias
@@ -67,8 +78,8 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                         data.flow_data.meta_class,  # "Класс"
                         values.describe_table,      # "Наименование класса"
                         tag_json,                   # "Тэг в JSON"
-                        descr_tag,                  # "Описание Тэга"
-                        source_colType,             # "Тип данных"
+                        tag_descr,                  # "Описание Тэга"
+                        tag_colType,             # "Тип данных"
                         "",                         # "Длина"
                         "",                         # "PK"
                         "",                         # "FK"
