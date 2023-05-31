@@ -59,17 +59,13 @@ class Attributes:
                 setattr(self, "alias", value)
             elif key == "$ref":
                 setattr(self, "ref", value)
-            elif (key == "type") and (value in ["number", "integer"]):
-                setattr(self, key, "string")
-            elif (key == "type") and (value == "boolean"):
-                setattr(self, key, "string")
             else:
                 setattr(self, key, value)
 
         if "type" not in properties_dict:
             setattr(self, "type", "string")
         if ("alias" not in properties_dict) and ("title" not in properties_dict):
-            setattr(self, "alias", "")
+            setattr(self, "alias", "Заголовок отсутствует")
         self.refs = []
 
         if (hasattr(self, "type")) and (self.type == "array"):
@@ -125,12 +121,12 @@ class FlowProcessing:
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
         tech_parsedColumns = [
-            {'name': 'ChangeId', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
-            {'name': 'ChangeType', 'colType': 'string', "description": "Тип изменений"},
-            {'name': 'ChangeTimestamp', 'colType': 'string', "description": "Временная метка сообщения"},
-            {'name': 'Hdp_Processed_Dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
+            {'name': 'changeid', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
+            {'name': 'changetype', 'colType': 'string', "description": "Тип изменений"},
+            {'name': 'changetimestamp', 'colType': 'string', "description": "Временная метка сообщения"},
+            {'name': 'hdp_processed_dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
         ]
-        # table_attr = TableAttributes(explodedColumns)
+
         parsed_object = []
         for item in tech_parsedColumns:
             parsed_rows = ParsedColumns(
@@ -139,15 +135,14 @@ class FlowProcessing:
                 description=item["description"]
             )
             del parsed_rows.alias
-            # table_attr.add_column(parsed_rows)
             parsed_object.append(parsed_rows)
 
         if anyOfExists == 1:
             preFilterCondition = f"value like '%Class_:_{self.meta_class}%'"
             postFilterCondition = f"meta.Class = '{self.meta_class}'"
         else:
-            preFilterCondition = f"value like '%Class_:_{self.meta_class}%' and value like '%payload.Id_:_%'"
-            postFilterCondition = f"payload.Id = ''"
+            preFilterCondition = f"value like '%Class_:_{self.meta_class}%' and value like '%Type_:_%'"
+            postFilterCondition = f"payload.Type = ''"
 
         table_attr = TableAttributes(
             explodedColumns=explodedColumns,
@@ -155,7 +150,7 @@ class FlowProcessing:
         )
 
         new_table = Table(
-            table_name = table_name,
+            table_name = table_name.lower().replace(".", "_"),
             attributes = table_attr,
             describe_table=describe_table,
             tab_lvl=self.tab_lvl,
@@ -166,6 +161,7 @@ class FlowProcessing:
         self.new_flow.tables.append(new_table)
 
     def append_columns(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str, anyOfRefs:int) -> None:
+        print(table_name)
         self.new_flow.append_attr(table_name, parsedColumns={"name": path, "colType": colType, "alias": path, "description": describe_attr})
 
     def update_path(self, path:str, key:str) -> str:
@@ -185,7 +181,7 @@ class FlowProcessing:
             new_explodedColumns.append(".".join([prefix] + postfix))
             table = table + "_" + ".".join(new_explodedColumns[-1].split(".")[1:])
         path = path.split(".")[-1]
-        return {"path":path, "explodedColumns":new_explodedColumns, "table":table}
+        return {"path":path, "explodedColumns":new_explodedColumns, "table":table.lower().replace(".", "_")}
 
     def pprint(self):
         return print(self.flow)

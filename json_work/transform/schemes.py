@@ -49,9 +49,10 @@ class Flow:
     def append_attr(self, curr_table:str, parent_table:str=None, full_table_name:str=None, parsedColumns:dict = None, flag:str =None) -> None:
 
         try:
+            print(curr_table)
             table = next(table for table in self.tables if table.table_name == curr_table)
             if parent_table:
-                table.parent_table = parent_table
+                table.parent_table = parent_table.replace(".", "")
             if full_table_name:
                 table.full_table_name = full_table_name.replace(".", "")
             if parsedColumns:

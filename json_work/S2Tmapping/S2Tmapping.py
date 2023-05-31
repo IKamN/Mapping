@@ -10,15 +10,20 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     ws = wb.active
     ws.append(["start"])
 
-    ws.column_dimensions['A'].width = 3
-    ws.column_dimensions['B'].width = 15
-    ws.column_dimensions['C'].width = 15
-
     # Create headers
-    headers = ["#", "Тип объекта",
-               "База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных","Длина", "PK", "FK", "Not Null",
-               "База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null", "Rejectable", "Trace New Values"
-    ]
+    source_target = ["#", "Тип объекта"]
+    source = ["База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных","Длина", "PK", "FK", "Not Null"]
+    target = ["База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null", "Rejectable", "Trace New Values"]
+    len_sourcetarget = len(source_target) + 1
+    len_source = len(source) + 1
+    len_target = len(target) + 1
+
+
+    headers = source_target + source + target
+
+    ws.column_dimensions['A'].width = len_sourcetarget
+    ws.column_dimensions['B'].width = len_source
+    ws.column_dimensions['C'].width = len_target
 
     ws.append(headers)
 
@@ -43,7 +48,7 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                 tag_json = column_data.name
                 tag_descr = column_data.description
                 tag_colType = ""
-            elif column_data.name.lower() == "hdp_processed_dttm":
+            elif column_data.name == "hdp_processed_dttm":
                 comment = "Техническое поле"
                 tag_json = ""
                 tag_descr = ""
@@ -55,12 +60,14 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                 tag_colType = ""
             else:
                 comment = ""
-                tag_descr = f"{values.describe_table}.{column_data.description}"
+                tag_descr = f"{values.describe_table}. {column_data.description}"
                 tag_colType = column_data.colType
                 if len(values.attributes.explodedColumns) == 1:
                     tag_json = ".".join(column_data.name.split(".")[1:])
                 else:
-                    tag_json = f"{column_data.name.split('.')[0]}[].{'.'.join(column_data.name.split('.')[1:])}"
+                    tag_path = '.'.join(column_data.name.split('.')[1:])
+                    arr_name = column_data.name.split('.')[0]
+                    tag_json = f"{arr_name}[].{tag_path}" if len(tag_path) > 0 else f"{arr_name}[]"
 
 
             column_data.colType = "string" if column_data.colType == "hash" else column_data.colType
@@ -76,10 +83,10 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                         "Реплика",                  # "Тип объекта"
                         base_system_source,         # "База/Система"
                         data.flow_data.meta_class,  # "Класс"
-                        values.describe_table,      # "Наименование класса"
+                        "",                         # "Наименование класса"
                         tag_json,                   # "Тэг в JSON"
                         tag_descr,                  # "Описание Тэга"
-                        tag_colType,             # "Тип данных"
+                        tag_colType,                 # "Тип данных"
                         "",                         # "Длина"
                         "",                         # "PK"
                         "",                         # "FK"
@@ -126,34 +133,34 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
         bottom=Side(style='thin')
     )
 
-    for col in range(1, 3):
+    for col in range(1, len_sourcetarget):
         for cell in ws[f"A{col}":f"B{col}"][0]:
             cell.fill = fiolet_fill
-        for cell in ws[f"R{col}":f"AH{col}"][0]:
+        for cell in ws[f"M{col}":f"AA{col}"][0]:
             cell.fill = blue_fill
 
-        for cell in ws[f"A{col}:AH{col}"][0]:
+        for cell in ws[f"A{col}:AA{col}"][0]:
             cell.border = border
 
-    for cell in ws[f"C{1}":f"Q{1}"][0]:
+    for cell in ws[f"C{1}":f"L{1}"][0]:
         cell.fill = orange_fill
-    for cell in ws[f"C{2}":f"Q{2}"][0]:
+    for cell in ws[f"C{2}":f"L{2}"][0]:
         cell.fill = green_fill
 
 
     ws.merge_cells("A1:B1")
     ws["A1"] = "Source/Target"
 
-    ws.merge_cells("C1:Q1")
+    ws.merge_cells("C1:L1")
     ws["C1"] = "Source"
 
-    ws.merge_cells("R1:AH1")
-    ws["R1"] = "Target"
+    ws.merge_cells("M1:AA1")
+    ws["M1"] = "Target"
 
     # Выравнивание текста по центру в объединенных ячейках
     center_alignment = Alignment(horizontal='center', vertical='center')
     ws['A1'].alignment = center_alignment
     ws['C1'].alignment = center_alignment
-    ws['R1'].alignment = center_alignment
+    ws['M1'].alignment = center_alignment
 
     wb.save(f"{file_name}.xlsx")

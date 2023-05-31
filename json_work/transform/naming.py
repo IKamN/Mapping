@@ -89,9 +89,9 @@ class NamingPrepare:
 
         for index in range(0, len(self.sorted_data)):
             old_table_name = self.sorted_data[index]
-            new_table_name = shorten_table(self.sorted_data[index])
+            # new_table_name = shorten_table(self.sorted_data[index]).lower()
             curr_table = self.flow_data.new_flow.find_table(old_table_name)
             shorten_alias(curr_table)
-        self.flow_data.new_flow.rename_table(old_table_name, new_table_name)
-        self.sorted_data[index] = new_table_name
+        # self.flow_data.new_flow.rename_table(old_table_name, new_table_name)
+        # self.sorted_data[index] = new_table_name
 
