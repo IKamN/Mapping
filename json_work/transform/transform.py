@@ -1,6 +1,5 @@
 from json_work.extract.extract import Extract
 from json_work.transform.schemes import Table, ParsedColumns, TableAttributes, Flow
-from dataclasses import dataclass, asdict
 
 
 class Transform(Extract):
@@ -14,6 +13,7 @@ class Transform(Extract):
 
         def listing_definitions(ref, table, path, explodedColumns, describe_attr:str) -> None:
             node = Node(definitions[ref])
+            table = table.lower().replace(".", "_")
 
             if not any(t.table_name == table for t in flow.new_flow.tables):
                 flow.append_table(table, node.alias, explodedColumns, anyOfExists)
@@ -37,9 +37,9 @@ class Transform(Extract):
                             else:
                                 listing_definitions(ref, table, new_path, explodedColumns, attr_key.alias)
                     else:
-                        flow.append_columns(new_path, table, explodedColumns, attr_key.type, node, attr_key.alias, anyOfExists)
+                        flow.append_columns(new_path, table, attr_key.type, attr_key.alias, anyOfExists)
             else:
-                flow.append_columns(path, table, explodedColumns, "string", node, describe_attr, anyOfExists)
+                flow.append_columns(path, table, "string", describe_attr, anyOfExists)
 
         for start_table in payload_refs:
             start_path = "payload"
@@ -121,16 +121,15 @@ class FlowProcessing:
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
         tech_parsedColumns = [
-            {'name': 'changeid', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
-            {'name': 'changetype', 'colType': 'string', "description": "Тип изменений"},
-            {'name': 'changetimestamp', 'colType': 'string', "description": "Временная метка сообщения"},
-            {'name': 'hdp_processed_dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
+            {'name': 'changeId', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
+            {'name': 'changeType', 'colType': 'string', "description": "Тип изменений"},
+            {'name': 'changeTimestamp', 'colType': 'string', "description": "Временная метка сообщения"},
+            {'name': 'Hdp_Processed_Dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
         ]
-
         parsed_object = []
         for item in tech_parsedColumns:
             parsed_rows = ParsedColumns(
-                name = item["name"],
+                name=item["name"],
                 colType=item["colType"],
                 description=item["description"]
             )
@@ -150,8 +149,8 @@ class FlowProcessing:
         )
 
         new_table = Table(
-            table_name = table_name.lower().replace(".", "_"),
-            attributes = table_attr,
+            table_name=table_name,
+            attributes=table_attr,
             describe_table=describe_table,
             tab_lvl=self.tab_lvl,
             preFilterCondition=preFilterCondition,
@@ -160,8 +159,8 @@ class FlowProcessing:
 
         self.new_flow.tables.append(new_table)
 
-    def append_columns(self, path:str, table_name: str, explodedColumns:list, colType:str, node:Node, describe_attr:str, anyOfRefs:int) -> None:
-        print(table_name)
+    def append_columns(self, path:str, table_name: str, colType:str, describe_attr:str, anyOfRefs:int) -> None:
+        table_name = table_name.lower().replace(".", "_")
         self.new_flow.append_attr(table_name, parsedColumns={"name": path, "colType": colType, "alias": path, "description": describe_attr})
 
     def update_path(self, path:str, key:str) -> str:
@@ -181,7 +180,7 @@ class FlowProcessing:
             new_explodedColumns.append(".".join([prefix] + postfix))
             table = table + "_" + ".".join(new_explodedColumns[-1].split(".")[1:])
         path = path.split(".")[-1]
-        return {"path":path, "explodedColumns":new_explodedColumns, "table":table.lower().replace(".", "_")}
+        return {"path": path, "explodedColumns": new_explodedColumns, "table": table}
 
     def pprint(self):
         return print(self.flow)

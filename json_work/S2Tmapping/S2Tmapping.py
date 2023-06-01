@@ -1,6 +1,7 @@
 import re
 import openpyxl
 from openpyxl.styles import PatternFill, Alignment, Border, Side
+from openpyxl.utils.cell import get_column_letter
 
 def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     # create new book excel
@@ -14,16 +15,14 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     source_target = ["#", "Тип объекта"]
     source = ["База/Система", "Класс", "Наименование класса","Тэг в JSON", "Описание Тэга", "Тип данных","Длина", "PK", "FK", "Not Null"]
     target = ["База/Система", "Схема", "Таблица", "Название родительской таблицы", "Описание таблицы", "Код атрибута", "Описание атрибута", "Комментарий", "Тип данных", "Length", "PK", "FK", "Not Null", "Rejectable", "Trace New Values"]
-    len_sourcetarget = len(source_target) + 1
-    len_source = len(source) + 1
-    len_target = len(target) + 1
-
-
+    len_sourcetarget = len(source_target)
+    len_source = len(source)
+    len_target = len(target)
     headers = source_target + source + target
 
-    ws.column_dimensions['A'].width = len_sourcetarget
-    ws.column_dimensions['B'].width = len_source
-    ws.column_dimensions['C'].width = len_target
+    ws.column_dimensions['A'].width = len_sourcetarget + 1
+    ws.column_dimensions['B'].width = len_source + 1
+    ws.column_dimensions['C'].width = len_target + 1
 
     ws.append(headers)
 
@@ -133,34 +132,39 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
         bottom=Side(style='thin')
     )
 
-    for col in range(1, len_sourcetarget):
-        for cell in ws[f"A{col}":f"B{col}"][0]:
+    sourcetarget_letter = get_column_letter(len_sourcetarget)
+    start_source_letter = get_column_letter(len_sourcetarget + 1)
+    end_source_letter = get_column_letter(len_source+len_sourcetarget)
+    start_target_letter = get_column_letter(len_sourcetarget+len_source + 1)
+    end_target_letter = get_column_letter(len_sourcetarget+len_source+len_target)
+    for col in range(1, len_sourcetarget + 1):
+        for cell in ws[f"A{col}":f"{sourcetarget_letter}{col}"][0]:
             cell.fill = fiolet_fill
-        for cell in ws[f"M{col}":f"AA{col}"][0]:
+        for cell in ws[f"{start_target_letter}{col}":f"{end_target_letter}{col}"][0]:
             cell.fill = blue_fill
 
-        for cell in ws[f"A{col}:AA{col}"][0]:
+        for cell in ws[f"A{col}:{end_target_letter}{col}"][0]:
             cell.border = border
 
-    for cell in ws[f"C{1}":f"L{1}"][0]:
+    for cell in ws[f"{start_source_letter}{1}":f"{end_source_letter}{1}"][0]:
         cell.fill = orange_fill
-    for cell in ws[f"C{2}":f"L{2}"][0]:
+    for cell in ws[f"{start_source_letter}{2}":f"{end_source_letter}{2}"][0]:
         cell.fill = green_fill
 
 
-    ws.merge_cells("A1:B1")
+    ws.merge_cells(f"A1:{sourcetarget_letter}1")
     ws["A1"] = "Source/Target"
 
-    ws.merge_cells("C1:L1")
-    ws["C1"] = "Source"
+    ws.merge_cells(f"{start_source_letter}1:{end_source_letter}1")
+    ws[f"{start_source_letter}1"] = "Source"
 
-    ws.merge_cells("M1:AA1")
-    ws["M1"] = "Target"
+    ws.merge_cells(f"{start_target_letter}1:{end_target_letter}1")
+    ws[f"{start_target_letter}1"] = "Target"
 
     # Выравнивание текста по центру в объединенных ячейках
     center_alignment = Alignment(horizontal='center', vertical='center')
     ws['A1'].alignment = center_alignment
-    ws['C1'].alignment = center_alignment
-    ws['M1'].alignment = center_alignment
+    ws[f'{start_source_letter}1'].alignment = center_alignment
+    ws[f'{start_target_letter}1'].alignment = center_alignment
 
     wb.save(f"{file_name}.xlsx")
