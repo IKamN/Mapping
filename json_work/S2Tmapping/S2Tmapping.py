@@ -41,26 +41,29 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                     column_data.name.split(".")[1:]) + "_hash"
 
             notnull = "+" if column_data.name.lower() in ["changeid", "changetype", "hdp_processed_dttm"] else ""
-
             if column_data.name.lower() in ["changeid", "changetype", "changetimestamp"]:
                 comment = "Техническое поле"
                 tag_json = column_data.name
                 tag_descr = column_data.description
                 tag_colType = ""
+                attr_colType = column_data.colType
             elif column_data.name == "hdp_processed_dttm":
                 comment = "Техническое поле"
                 tag_json = ""
                 tag_descr = ""
                 tag_colType = ""
+                attr_colType = column_data.colType
             elif "hash" in column_data.colType:
-                comment = column_data.description
+                comment = column_data.comment
                 tag_json = ""
                 tag_descr = ""
                 tag_colType = ""
+                attr_colType = "string"
             else:
                 comment = ""
                 tag_descr = f"{values.describe_table}. {column_data.description}"
                 tag_colType = column_data.colType
+                attr_colType = "string"
                 if len(values.attributes.explodedColumns) == 1:
                     tag_json = ".".join(column_data.name.split(".")[1:])
                 else:
@@ -68,14 +71,10 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                     arr_name = column_data.name.split('.')[0]
                     tag_json = f"{arr_name}[].{tag_path}" if len(tag_path) > 0 else f"{arr_name}[]"
 
-
-            column_data.colType = "string" if column_data.colType == "hash" else column_data.colType
             if column_data.alias is not None:
                 code_attr = column_data.alias
-                code_attr_source = column_data.alias
             else:
                 code_attr = column_data.name
-                code_attr_source = ""
 
 
             row_data = [index,                      # "#"
@@ -98,7 +97,7 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                         code_attr,                  # "Код атрибута"
                         column_data.description,    # "Описание атрибута"
                         comment,                    # "Комментарий"
-                        column_data.colType,        # "Тип данных"
+                        attr_colType,               # "Тип данных"
                         "",                         # "Length"
                         "",                         # "PK"
                         "",                         # "FK"

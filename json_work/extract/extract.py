@@ -9,7 +9,7 @@ class Extract:
         Open json_file and transform, return new dict
         """
 
-        def get_refs(items):
+        def __get_refs(items):
             """
             Get refs in payload
             """
@@ -23,7 +23,7 @@ class Extract:
         with open(self.json_file, encoding='utf-8-sig') as file:
             data = json.load(file)
             meta_class = data['title'].split(',')[1].split(':')[1].strip()
-            payload_refs = get_refs(data['properties']['payload']["items"])
+            payload_refs = __get_refs(data['properties']['payload']["items"])
             definitions = data['definitions']
             new_json = {
                 'meta': meta_class,

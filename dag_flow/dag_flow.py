@@ -31,10 +31,12 @@ class Flow:
             parsedColumns = copy.deepcopy(values.attributes.parsedColumns)
             for i in parsedColumns:
                 del i.description
+                del i.comment
             for i in parsedColumns:
-                if i.name == "Hdp_Processed_Dttm":
+                if i.name == "hdp_processed_dttm":
                     parsedColumns.remove(i)
-
+                if i.colType not in ["timestamp", "hash"]:
+                    i.colType = "string"
 
             explodedColumns = values.attributes.explodedColumns
             preFilterCondition = values.preFilterCondition

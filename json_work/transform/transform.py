@@ -65,7 +65,7 @@ class Attributes:
         if "type" not in properties_dict:
             setattr(self, "type", "string")
         if ("alias" not in properties_dict) and ("title" not in properties_dict):
-            setattr(self, "alias", "Заголовок отсутствует")
+            setattr(self, "alias", "")
         self.refs = []
 
         if (hasattr(self, "type")) and (self.type == "array"):
@@ -104,27 +104,28 @@ class FlowProcessing:
 
     def append_hash(self, table_name:str, explodedColumns:list):
         parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
+        descr_table = self.new_flow.find_table(table_name).describe_table
+        descr_parent_table = self.new_flow.find_table(parent_table).describe_table
         parent_path = explodedColumns[-1]
-        parent_alias = parent_path + ".hash" if len(parent_path.split(".")) == 1 else ".".join(
-            parent_path.split(".")[1:]) + ".hash"
-        parent_describe = f"связь с {table_name}"
+        parent_alias = parent_path + ".hash" if len(parent_path.split(".")) == 1 else ".".join(parent_path.split(".")[1:]) + ".hash"
 
         array_path = explodedColumns[-1].split(".")[-1] + "_array"
         alias_hash = array_path.replace("_array", ".hash")
-        array_describe = f"связь с {parent_table}"
 
-        hash_columns = {"name": parent_path, "colType": "hash", "alias": parent_alias, "description": parent_describe}
-        array_columns = {"name": array_path, "colType": "hash", "alias": alias_hash, "description": array_describe}
+        parent_comment = f"Поле для связи с дочерней таблицей {table_name}"
+        array_comment = f"Поле для связи с родительской таблицей {parent_table}"
+
+        hash_columns = {"name": parent_path, "colType": "hash", "alias": parent_alias, "description": descr_table, "comment": parent_comment}
+        array_columns = {"name": array_path, "colType": "hash", "alias": alias_hash, "description": descr_parent_table, "comment": array_comment}
         self.new_flow.append_attr(table_name,  parent_table=parent_table, parsedColumns=array_columns, flag="insert")
         self.new_flow.append_attr(parent_table, parsedColumns=hash_columns)
-
 
     def append_table(self, table_name:str, describe_table:str, explodedColumns:list, anyOfExists:int) -> None:
         tech_parsedColumns = [
             {'name': 'changeId', 'colType': 'string', "description": "Уникальный идентификатор изменений"},
             {'name': 'changeType', 'colType': 'string', "description": "Тип изменений"},
             {'name': 'changeTimestamp', 'colType': 'string', "description": "Временная метка сообщения"},
-            {'name': 'Hdp_Processed_Dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
+            {'name': 'hdp_processed_dttm', 'colType': 'timestamp', "description": "Дата и время внесения записи в DAPP"},
         ]
         parsed_object = []
         for item in tech_parsedColumns:
@@ -161,7 +162,7 @@ class FlowProcessing:
 
     def append_columns(self, path:str, table_name: str, colType:str, describe_attr:str, anyOfRefs:int) -> None:
         table_name = table_name.lower().replace(".", "_")
-        self.new_flow.append_attr(table_name, parsedColumns={"name": path, "colType": colType, "alias": path, "description": describe_attr})
+        self.new_flow.append_attr(table_name, parsedColumns={"name": path, "colType": colType, "alias": path, "description": describe_attr, "comment": ""})
 
     def update_path(self, path:str, key:str) -> str:
         return path + f".{key}"
