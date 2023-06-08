@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import yaml
 
 
@@ -23,6 +23,10 @@ labels = [
 
 def get_interface(config_path):
 
+    def on_closing():
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            root.destroy()
+
     def submit():
         values = {}
         for i in range(10):
@@ -37,8 +41,6 @@ def get_interface(config_path):
         with open(config_path, "w", encoding="utf-8") as file:
             yaml.dump(values, file, allow_unicode=True, default_style="'")
         root.destroy()
-
-
 
     def browse():
         import os
@@ -81,8 +83,6 @@ def get_interface(config_path):
     create_button = tk.Button(root, text="Create", command=submit)
     create_button.grid(row=19, columnspan=3)
 
+    root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
     return config
-
-# get_interface("/media/kini/B0E4EF45E4EF0C82/PythonFolder/parsing/VTB/Mapping/config.yml")
-

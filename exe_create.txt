@@ -1,0 +1,7 @@
+pyi-makespec.exe main.py --name gen_map --onefile --noconsole --add-data "config.yml;."
+
+in end of spec file:
+import shutil
+shutil.copyfile('config.yml', '{0}/config.yml'.format(DISTPATH))
+
+pyinstaller --clean gen_map.spec
