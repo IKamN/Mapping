@@ -106,6 +106,8 @@ class FlowProcessing:
         last_array = ".".join(explodedColumns[-1].split(".")[1:]).lower()
         parent_table = table_name.replace(f"_{last_array}", "")
         descr_table = self.new_flow.find_table(table_name).describe_table
+
+        # print(descr_table)
         # print(f"table_name:{table_name}, parent_table:{parent_table}, explodedColumns:{explodedColumns}")
         descr_parent_table = self.new_flow.find_table(parent_table).describe_table
         parent_path = explodedColumns[-1]
@@ -162,7 +164,7 @@ class FlowProcessing:
 
         self.new_flow.tables.append(new_table)
 
-    def append_columns(self, path:str, table_name: str, colType:str, describe_attr:str, anyOfRefs:int) -> None:
+    def append_columns(self, path:str, table_name: str, colType:str, describe_attr:str, anyOfRefs:int, hash_flag:str = None) -> None:
         table_name = table_name.lower().replace(".", "_")
         self.new_flow.append_attr(table_name, parsedColumns={"name": path, "colType": colType, "alias": path, "description": describe_attr, "comment": ""})
 
