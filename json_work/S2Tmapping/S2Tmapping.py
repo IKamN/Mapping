@@ -61,7 +61,7 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
                 attr_colType = "string"
             else:
                 comment = ""
-                tag_descr = f"{values.describe_table}. {column_data.description}"
+                tag_descr = f"{values.describe_table}. {column_data.description}" if column_data.description else f"{values.describe_table}"
                 tag_colType = column_data.colType
                 attr_colType = "string"
                 if len(values.attributes.explodedColumns) == 1:
@@ -166,4 +166,4 @@ def Mapping(data, base_system_source:str, database:str, file_name:str) -> None:
     ws[f'{start_source_letter}1'].alignment = center_alignment
     ws[f'{start_target_letter}1'].alignment = center_alignment
 
-    wb.save(f"{file_name}.xlsx")
+    wb.save(f"{file_name}")

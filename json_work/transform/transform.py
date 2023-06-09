@@ -103,14 +103,18 @@ class FlowProcessing:
         self.new_flow = Flow(tables=[])
 
     def append_hash(self, table_name:str, explodedColumns:list):
-        parent_table = "_".join(table_name.split("_")[:-1]) if len(table_name.split("_")) > 1 else table_name.split("_")[0]
+        last_array = ".".join(explodedColumns[-1].split(".")[1:]).lower()
+        parent_table = table_name.replace(f"_{last_array}", "")
         descr_table = self.new_flow.find_table(table_name).describe_table
+
+        # print(descr_table)
+        # print(f"table_name:{table_name}, parent_table:{parent_table}, explodedColumns:{explodedColumns}")
         descr_parent_table = self.new_flow.find_table(parent_table).describe_table
         parent_path = explodedColumns[-1]
         parent_alias = parent_path + ".hash" if len(parent_path.split(".")) == 1 else ".".join(parent_path.split(".")[1:]) + ".hash"
 
         array_path = explodedColumns[-1].split(".")[-1] + "_array"
-        alias_hash = array_path.replace("_array", ".hash")
+        alias_hash = array_path.replace("_array", "_hash")
 
         parent_comment = f"Поле для связи с дочерней таблицей {table_name}"
         array_comment = f"Поле для связи с родительской таблицей {parent_table}"
@@ -160,7 +164,7 @@ class FlowProcessing:
 
         self.new_flow.tables.append(new_table)
 
-    def append_columns(self, path:str, table_name: str, colType:str, describe_attr:str, anyOfRefs:int) -> None:
+    def append_columns(self, path:str, table_name: str, colType:str, describe_attr:str, anyOfRefs:int, hash_flag:str = None) -> None:
         table_name = table_name.lower().replace(".", "_")
         self.new_flow.append_attr(table_name, parsedColumns={"name": path, "colType": colType, "alias": path, "description": describe_attr, "comment": ""})
 
